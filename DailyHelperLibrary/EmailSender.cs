@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DailyHelperLibrary
 {
-    public class EmailSender
+    public class EmailSender: IEmailSender
     {
         private SmtpClient _client;
 

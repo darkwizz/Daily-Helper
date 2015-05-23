@@ -11,6 +11,7 @@ using DailyHelperLibrary.Entry;
 using System.Threading;
 using DailyHelperLibrary.Timer;
 using DailyHelperLibrary.TODO;
+using DailyHelperLibrary.Scheduler;
 
 namespace DailyHelperConsoleModule
 {
@@ -29,8 +30,11 @@ namespace DailyHelperConsoleModule
             NotesModule notesModule = new NotesModule(noteProxy);
 
             UserSaver userProxy = new UserSaver();
+            IScheduler scheduler = new WindowsScheduler();
             RegistrationModule regModule = new RegistrationModule(userProxy);
-            AuthorisationModule authModule = new AuthorisationModule(userProxy);
+            AuthorisationModule authModule = new AuthorisationModule(userProxy, scheduler);
+
+            SchedulerModule schedulerModule = new SchedulerModule(scheduler);
 
             TodoSaver todoProxy = new TodoSaver();
             TodoModule todoModule = new TodoModule(todoProxy);
@@ -38,6 +42,10 @@ namespace DailyHelperConsoleModule
             TimerModule timerModule = new TimerModule();
 
             IDailyHelperUI ui = new ConsoleUIModule(); // new User("toxa@gmail.com", "12345")
+            ui.Logout += authModule.OnExited;
+            ui.DeleteScheduleItem += schedulerModule.OnDeletedScheduleItem;
+            ui.PlaceOnceRunningSelect += schedulerModule.OnOnceRunningSelected;
+            ui.PlaceRegularlyRunningSelect += schedulerModule.OnRegularlyRunningSelected;
             ui.AddNewNoteSelect += notesModule.OnAddNote;
             ui.DeleteNoteSelect += notesModule.OnDeleteNote;
             ui.EditNoteSelect += notesModule.OnEditNote;
@@ -56,6 +64,7 @@ namespace DailyHelperConsoleModule
             noteProxy.Dispose();
             userProxy.Dispose();
             todoProxy.Dispose();
+            scheduler.Dispose();
             Thread.Sleep(4000);
         }
 

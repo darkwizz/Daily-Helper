@@ -14,7 +14,7 @@ namespace DailyHelperLibrary.Entry
     public class RegistrationModule
     {
         private IUserSaver _saverService;
-        private EmailSender _sender;
+        private IEmailSender _sender;
         private string _checkingKey;
 
         public RegistrationModule(IUserSaver userSaver)

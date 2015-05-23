@@ -11,12 +11,20 @@ namespace DailyHelperLibrary.Timer
     {
         public EventResult OnTimerStarted(TimerEventArgs e)
         {
-            TimerCallback callback = e.Tick;
+            TimerCallback callback = GetCallback(e);
             //callback += ClearTimer;
             long timerDuration = (long)e.Time.TotalMilliseconds;
             System.Threading.Timer timer = new System.Threading.Timer(callback, null, timerDuration, -1);
             //timer.Dispose(
             return new EventResult(true);
+        }
+
+        private TimerCallback GetCallback(TimerEventArgs e)
+        {
+            return (obj) =>
+                {
+                    e.Tick();
+                };
         }
 
         private void ClearTimer(object state)

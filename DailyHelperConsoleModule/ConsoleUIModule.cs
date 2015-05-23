@@ -8,6 +8,7 @@ using DailyHelperLibrary;
 using DailyHelperLibrary.Entities;
 using DailyHelperLibrary.Entry;
 using DailyHelperLibrary.Notes;
+using DailyHelperLibrary.Scheduler;
 using DailyHelperLibrary.Timer;
 using DailyHelperLibrary.TODO;
 
@@ -15,6 +16,10 @@ namespace DailyHelperConsoleModule
 {
     public class ConsoleUIModule: IDailyHelperUI
     {
+        public event Func<ExitEventArgs, EventResult> Logout;
+        public event Func<SchedulerModuleEventArgs<OnceRunningScheduleItem>, EventResult> PlaceOnceRunningSelect;
+        public event Func<SchedulerModuleEventArgs<RegularlyRunningScheduleItem>, EventResult> PlaceRegularlyRunningSelect;
+        public event Func<SchedulerModuleEventArgs<OnceRunningScheduleItem>, EventResult> DeleteScheduleItem;
         public event Func<TimerEventArgs, EventResult> StartTimerSelect;
         public event Func<NoteModuleEventArgs, EventResult> AddNewNoteSelect;
         public event Func<NoteModuleEventArgs, EventResult> EditNoteSelect;
@@ -29,7 +34,8 @@ namespace DailyHelperConsoleModule
         private User _user;
         private List<Note> _notes;
         private List<TimeSpan> _timers;
-        private List<TodoItem> _items;
+        private List<TodoItem> _todoItems;
+        private List<OnceRunningScheduleItem> _scheduleItems;
         private List<string> _timerCaptions;
 
         public ConsoleUIModule()
@@ -91,6 +97,12 @@ namespace DailyHelperConsoleModule
                         GoInTODOModule();
                         break;
 
+
+                    case "4":
+                        GoInSchedulerModule();
+                        break;
+
+
                     case "0": // log out
                         isEntered = false;
                         if (_timers != null)
@@ -101,6 +113,11 @@ namespace DailyHelperConsoleModule
                         {
                             _timerCaptions.Clear();
                         }
+                        if (_scheduleItems != null)
+                        {
+                            _scheduleItems.Clear();
+                        }
+                        Logout(new ExitEventArgs(_user));
                         break;
 
 
@@ -113,6 +130,7 @@ namespace DailyHelperConsoleModule
                         {
                             _timerCaptions.Clear();
                         }
+                        Logout(new ExitEventArgs(_user));
                         Console.WriteLine("Press any key to continue...");
                         Console.ReadKey();
                         return;
@@ -167,9 +185,10 @@ namespace DailyHelperConsoleModule
                                 return false;
                             }
                             _notes = _user.Notes.Values.ToList();
-                            _items = _user.TodoItems.Values.ToList();
+                            _todoItems = _user.TodoItems.Values.ToList();
                             _timers = new List<TimeSpan>();
                             _timerCaptions = new List<string>();
+                            _scheduleItems = _user.ScheduleItems.Values.ToList();
                             Thread.Sleep(3000);
                             return true;
                         }
@@ -241,6 +260,105 @@ namespace DailyHelperConsoleModule
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
             }
+        }
+
+        private void GoInSchedulerModule()
+        {
+            string choice;
+            while (true)
+            {
+                Console.Clear();
+                ShowSchedulerMenu();
+                Console.Write("\nWhat is your choice: ");
+                choice = Console.ReadLine();
+
+                string executablePath;
+                string message;
+                DateTime triggeringTime;
+                EventResult result;
+                string resultMessage;
+                
+                switch (choice)
+                {
+                    case "1": // Place once running item
+                        Console.Write("Enter Executable path: ");
+                        executablePath = Console.ReadLine();
+                        triggeringTime = GetDate();
+                        Console.Write("Enter message: ");
+                        message = Console.ReadLine();
+                        message = message == "" ? null : message;
+                        OnceRunningScheduleItem item = new OnceRunningScheduleItem(executablePath, triggeringTime);
+                        item.Message = message;
+                        result = PlaceOnceRunningSelect(new SchedulerModuleEventArgs<OnceRunningScheduleItem>(item, _user));
+                        resultMessage = result.IsSuccessful ? "OK..." : result.ErrorDescription;
+                        Console.WriteLine(resultMessage);
+                        _scheduleItems.Add(item);
+                        break;
+
+
+                    case "2": // Place regularly running item
+                        Console.Write("Enter Executable path: ");
+                        executablePath = Console.ReadLine();
+                        triggeringTime = GetDate();
+                        Console.Write("Enter message: ");
+                        message = Console.ReadLine();
+                        message = message == "" ? null : message;
+                        RegularlyRunningScheduleItem regItem = new RegularlyRunningScheduleItem(executablePath, triggeringTime);
+                        regItem.Message = message;
+                        // by default run on Tuesday and Friday
+                        regItem.RunningDays[1] = true;
+                        regItem.RunningDays[4] = true;
+                        result = PlaceRegularlyRunningSelect(new SchedulerModuleEventArgs<RegularlyRunningScheduleItem>(regItem, _user));
+                        resultMessage = result.IsSuccessful ? "OK..." : result.ErrorDescription;
+                        Console.WriteLine(resultMessage);
+                        _scheduleItems.Add(regItem);
+                        break;
+
+
+                    case "3": // watch all schedule items
+                        int i = 1;
+                        foreach (var scheduleItem in _scheduleItems)
+                        {
+                            Console.WriteLine(i + ". " + scheduleItem.ExecutablePath + " on " + scheduleItem.TriggeringTime);
+                        }
+                        break;
+
+
+                    case "4": // remove from scheduling
+                        Console.Write("Enter number of removed item: ");
+                        string enteredNumber = Console.ReadLine();
+                        int number = int.Parse(enteredNumber);
+                        OnceRunningScheduleItem removedItem = _scheduleItems[number - 1];
+                        result = DeleteScheduleItem(new SchedulerModuleEventArgs<OnceRunningScheduleItem>(removedItem, _user));
+                        resultMessage = result.IsSuccessful ? "OK..." : result.ErrorDescription;
+                        Console.WriteLine(resultMessage);
+                        _scheduleItems.RemoveAt(number - 1);
+                        break;
+
+
+                    case "0":
+                        return;
+
+
+                    default:
+                        Console.WriteLine("No such function");
+                        break;
+                }
+                Console.WriteLine("Press any key to continue...");
+                Console.ReadKey();
+            }
+        }
+
+        private DateTime GetDate()
+        {
+            Console.Write("Enter hours: ");
+            string enteredHours = Console.ReadLine();
+            Console.Write("Enter minutes: ");
+            string enteredMinutes = Console.ReadLine();
+
+            int hours = int.Parse(enteredHours);
+            int minutes = int.Parse(enteredMinutes);
+            return DateTime.Today + new TimeSpan(hours, minutes, 0);
         }
 
         private void GoInNoteModule()
@@ -386,7 +504,7 @@ namespace DailyHelperConsoleModule
 
                         args = new TodoModuleEventArgs(_user, item);
 
-                        _items.Add(item);
+                        _todoItems.Add(item);
                         result = AddNewTodoSelect(args);
                         if (!result.IsSuccessful)
                         {
@@ -404,13 +522,13 @@ namespace DailyHelperConsoleModule
                         }
                         else
                         {
-                            if (itemNumber < 1 || itemNumber > _items.Count)
+                            if (itemNumber < 1 || itemNumber > _todoItems.Count)
                             {
                                 Console.WriteLine("Out of range");
                             }
                             else
                             {
-                                item = _items[itemNumber - 1];
+                                item = _todoItems[itemNumber - 1];
                                 _notes.RemoveAt(itemNumber - 1);
 
                                 args = new TodoModuleEventArgs(_user, item);
@@ -426,9 +544,9 @@ namespace DailyHelperConsoleModule
 
 
                     case "3": // Watch TODOs
-                        for (int i = 0; i < _items.Count; i++)
+                        for (int i = 0; i < _todoItems.Count; i++)
                         {
-                            Console.WriteLine((i + 1) + ". " + _items[i].TodoText);
+                            Console.WriteLine((i + 1) + ". " + _todoItems[i].TodoText);
                         }
                         break;
 
@@ -556,7 +674,7 @@ namespace DailyHelperConsoleModule
             }
         }
 
-        private void TimerProcedure(object state)
+        private void TimerProcedure()
         {
             Console.Beep(18000, 3000);
             Console.WriteLine("ALAAAAAAAAAARM");
@@ -577,6 +695,7 @@ namespace DailyHelperConsoleModule
             string menu = "1 - go to note module;\n" +
                           "2 - go to timer module;\n" +
                           "3 - go to TODO module;\n" +
+                          "4 - go to Scheduler module;\n" +
                           "0 - to log out;\n" +
                           "-1 - to exit;\n";
             Console.WriteLine(menu);
@@ -598,6 +717,16 @@ namespace DailyHelperConsoleModule
                           "2 - to complete existing TODO;\n" +
                           "3 - to watch all TODO records;\n" +
                           "0 - to exit from TODO module;\n";
+            Console.WriteLine(menu);
+        }
+
+        private void ShowSchedulerMenu()
+        {
+            string menu = "1 - to place new Once running Schedule Item;\n" +
+                          "2 - to place new Regularly running Schedule Item;\n" +
+                          "3 - to watch all Schedule items;\n" +
+                          "4 - to remove Schedule Item from scheduling;\n" +
+                          "0 - to exit from Scheduler module;\n";
             Console.WriteLine(menu);
         }
     }
