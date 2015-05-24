@@ -8,12 +8,10 @@ using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.ServiceContracts
 {
-    [ServiceContract(Name = "IUserSaverService", Namespace = "Server/")]
-    interface IUserSaverService
+    [ServiceContract(Name = "ISocialNetworkAccountInfoSaverService", Namespace = "Server/")]
+    interface ISocialNetworkAccountInfoSaverService
     {
         [OperationContract]
-        bool RegisterUser(ServiceUser user);
-        [OperationContract]
-        ServiceUser GetUser(string email);
+        void UpdateAccountInfo(ServiceUser user, ServiceSocialNetworkAccountInfo info);
     }
 }

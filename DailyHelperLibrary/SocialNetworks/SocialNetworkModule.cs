@@ -22,7 +22,7 @@ namespace DailyHelperLibrary.SocialNetworks
             User user = e.User;
             SocialNetworkAccountInfo info = e.AccountInfo;
             SocialNetworkAccountMonitor monitor = new SocialNetworkAccountMonitorStub();
-            _proxy.UpdateInfo(user, info);
+            _proxy.UpdateAccountInfo(user, info);
             monitor.StartMonitoring();
             return new EventResult(true);
         }
@@ -32,7 +32,7 @@ namespace DailyHelperLibrary.SocialNetworks
             User user = e.User;
             SocialNetworkAccountInfo info = e.AccountInfo;
             SocialNetworkAccountMonitor monitor = new SocialNetworkAccountMonitorStub();
-            _proxy.UpdateInfo(user, info);
+            _proxy.UpdateAccountInfo(user, info);
             monitor.StopMonitoring();
             return new EventResult(true);
         }

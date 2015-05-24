@@ -10,18 +10,13 @@ using DailyHelperLibrary.ServiceContracts;
 
 namespace DailyHelperLibrary.Proxies
 {
-    public class UserSaver : IUserSaver, IDisposable
+    public class SocialNetworkAccountInfoSaver : ISocialNetworkAccountInfoSaver, IDisposable
     {
-        private UserSaverProxy _proxy = new UserSaverProxy();
+        private SocialNetworkAccountInfoSaverProxy _proxy = new SocialNetworkAccountInfoSaverProxy();
 
-        public bool RegisterUser(User user)
+        public void UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
         {
-            return _proxy.RegisterUser(user);
-        }
-
-        public User GetUser(string email)
-        {
-            return _proxy.GetUser(email);
+            _proxy.UpdateAccountInfo(user, info);
         }
 
         public void Dispose()
@@ -29,20 +24,15 @@ namespace DailyHelperLibrary.Proxies
             _proxy.Close();
         }
 
-        class UserSaverProxy : ClientBase<IUserSaverService>
+        class SocialNetworkAccountInfoSaverProxy : ClientBase<ISocialNetworkAccountInfoSaverService>
         {
-            public UserSaverProxy() :
-                base("SaveUserEndpoint")
+            public SocialNetworkAccountInfoSaverProxy() :
+                base("SaveAccountInfoEndpoint")
             { }
 
-            public bool RegisterUser(User user)
+            public void UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
             {
-                return Channel.RegisterUser(user.ServiceUser);
-            }
-
-            public User GetUser(string email)
-            {
-                return Channel.GetUser(email).User;
+                Channel.UpdateAccountInfo(user.ServiceUser, info.ServiceAccountInfo);
             }
 
             new public void Close()

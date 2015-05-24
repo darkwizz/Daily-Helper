@@ -9,6 +9,6 @@ namespace DailyHelperLibrary.Savers
 {
     public interface ISocialNetworkAccountInfoSaver
     {
-        void UpdateInfo(User user, SocialNetworkAccountInfo info);
+        void UpdateAccountInfo(User user, SocialNetworkAccountInfo info);
     }
 }

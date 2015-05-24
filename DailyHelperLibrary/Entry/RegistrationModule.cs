@@ -57,8 +57,8 @@ namespace DailyHelperLibrary.Entry
             string password = e.Password;
             try
             {
-                _saverService.RegisterUser(new User(email, password));
-                return new EventResult(true);
+                bool isSuccessRegistration = _saverService.RegisterUser(new User(email, password));
+                return isSuccessRegistration ? new EventResult(true) : new EventResult(false, "Can't register new user. Please, try later");
             }
             catch (CommunicationException ex)
             {

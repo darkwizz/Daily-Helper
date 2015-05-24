@@ -56,6 +56,7 @@
     <Compile Include="Entry\RegistrationEventArgs.cs" />
     <Compile Include="Entry\RegistrationModule.cs" />
     <Compile Include="Proxies\NoteSaver.cs" />
+    <Compile Include="Proxies\SocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Proxies\TodoSaver.cs" />
     <Compile Include="Proxies\UserSaver.cs" />
     <Compile Include="Entities\User.cs" />
@@ -64,6 +65,7 @@
     <Compile Include="Savers\ITodoSaver.cs" />
     <Compile Include="Savers\IUserSaver.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
+    <Compile Include="ServiceContracts\ISocialNetworkAccountInfoSaverService.cs" />
     <Compile Include="ServiceContracts\ITodoSaverService.cs" />
     <Compile Include="ServiceContracts\IUserSaverService.cs" />
     <Compile Include="ServiceEntities\ServiceNote.cs" />
