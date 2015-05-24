@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\TodoItem.cs" />
     <Compile Include="Entry\AcceptingCheckingKeyEventArgs.cs" />
     <Compile Include="Entry\AuthorisationEventArgs.cs" />
@@ -59,19 +60,26 @@
     <Compile Include="Proxies\UserSaver.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="Savers\INoteSaver.cs" />
+    <Compile Include="Savers\ISocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Savers\ITodoSaver.cs" />
     <Compile Include="Savers\IUserSaver.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
     <Compile Include="ServiceContracts\ITodoSaverService.cs" />
     <Compile Include="ServiceContracts\IUserSaverService.cs" />
     <Compile Include="ServiceEntities\ServiceNote.cs" />
+    <Compile Include="ServiceEntities\ServiceSocialNetworkAccountInfo.cs" />
     <Compile Include="ServiceEntities\ServiceTodoItem.cs" />
     <Compile Include="ServiceEntities\ServiceUser.cs" />
+    <Compile Include="SocialNetworks\SocialNetworAccountMonitorStub.cs" />
+    <Compile Include="SocialNetworks\SocialNetworkAccountMonitor.cs" />
+    <Compile Include="SocialNetworks\SocialNetworkEventArgs.cs" />
+    <Compile Include="SocialNetworks\SocialNetworkModule.cs" />
     <Compile Include="Timer\TimerModule.cs" />
     <Compile Include="Timer\TimerEventArgs.cs" />
     <Compile Include="TODO\TodoModule.cs" />
     <Compile Include="TODO\TodoModuleEventArgs.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

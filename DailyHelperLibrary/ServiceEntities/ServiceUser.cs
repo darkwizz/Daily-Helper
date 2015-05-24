@@ -29,11 +29,14 @@ namespace DailyHelperLibrary.ServiceEntities
         public Dictionary<Guid, ServiceNote> Notes { get; set; }
         [DataMember]
         public Dictionary<Guid, ServiceTodoItem> TodoItems { get; set; }
+        [DataMember]
+        public Dictionary<ServiceSocialNetworkAccounts, ServiceSocialNetworkAccountInfo> Accounts { get; set; }
 
         public ServiceUser()
         {
             Notes = new Dictionary<Guid,ServiceNote>();
             TodoItems = new Dictionary<Guid,ServiceTodoItem>();
+            Accounts = new Dictionary<ServiceSocialNetworkAccounts, ServiceSocialNetworkAccountInfo>();
         }
     }
 }

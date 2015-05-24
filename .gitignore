@@ -1,0 +1,9 @@
+DailyHelperGUI/
+Server/bin/
+Server/obj/
+DailyHelperLibrary/bin/
+DailyHelperLibrary/obj/
+
+DailyHelperConsoleModule/bin/
+DailyHelperConsoleModule/obj/
+Windows System Scheduler/
