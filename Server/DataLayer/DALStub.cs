@@ -45,5 +45,10 @@ namespace Server.DataLayer
         {
             Console.WriteLine("TODO item of user {0} has been removed", user.Email);
         }
+
+        public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
+        {
+            Console.WriteLine("Update user social network account info...");
+        }
     }
 }

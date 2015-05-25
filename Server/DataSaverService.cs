@@ -11,7 +11,7 @@ using Server.DataLayer;
 namespace Server
 {
     [ServiceBehavior(Namespace = "Server/")]
-    class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService
+    class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService, ISocialNetworkAccountInfoSaverService
     {
         //private static DataSaverService _saverService;
         private IDAL _dataLayer = new DALStub();
@@ -42,10 +42,11 @@ namespace Server
         //    return _saverService;
         //}
 
-        void IUserSaverService.RegisterUser(User user)
+        bool IUserSaverService.RegisterUser(User user)
         {
             Console.WriteLine("Register new user - {0}", user.Email);
             _dataLayer.SaveUser(user);
+            return true;
         }
 
         User IUserSaverService.GetUser(string email)
@@ -82,6 +83,11 @@ namespace Server
         {
             Console.WriteLine("Remove existing todo item...");
             _dataLayer.RemoveTodoItem(user, item);
+        }
+
+        void ISocialNetworkAccountInfoSaverService.UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
+        {
+            Console.WriteLine("Updating user account info...");
         }
     }
 }

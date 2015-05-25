@@ -45,11 +45,14 @@
   <ItemGroup>
     <Compile Include="DataLayer\DALStub.cs" />
     <Compile Include="DataLayer\IDAL.cs" />
+    <Compile Include="DataLayer\MsSqlDAL.cs" />
     <Compile Include="DataSaverService.cs" />
     <Compile Include="Entities\Note.cs" />
+    <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\TodoItem.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
+    <Compile Include="ServiceContracts\ISocialNetworkAccountInfoSaverService.cs" />
     <Compile Include="ServiceContracts\ITodoSaverService.cs" />
     <Compile Include="ServiceContracts\IUserSaverService.cs" />
     <Compile Include="Program.cs" />
