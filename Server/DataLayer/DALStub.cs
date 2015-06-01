@@ -50,5 +50,15 @@ namespace Server.DataLayer
         {
             Console.WriteLine("Update user social network account info...");
         }
+
+        public void Dispose()
+        {
+            Console.WriteLine("Disposing...");
+        }
+
+        public void Close()
+        {
+            Dispose();
+        }
     }
 }

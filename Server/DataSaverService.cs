@@ -7,6 +7,7 @@ using System.ServiceModel;
 using Server.Entities;
 using Server.ServiceContracts;
 using Server.DataLayer;
+using System.Data.SqlClient;
 
 namespace Server
 {
@@ -45,8 +46,16 @@ namespace Server
         bool IUserSaverService.RegisterUser(User user)
         {
             Console.WriteLine("Register new user - {0}", user.Email);
-            _dataLayer.SaveUser(user);
-            return true;
+            try
+            {
+                _dataLayer.SaveUser(user);
+                return true;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Such user already exists"); // logging
+                return false;
+            }
         }
 
         User IUserSaverService.GetUser(string email)
