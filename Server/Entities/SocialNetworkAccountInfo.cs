@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Server
+namespace Server.Entities
 {
     [DataContract(Namespace = "Server/")]
     enum SocialNetworkAccounts

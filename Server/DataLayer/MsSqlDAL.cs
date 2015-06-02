@@ -21,64 +21,52 @@ namespace Server.DataLayer
         private static SqlDataAdapter _noteAdapter = null;
         private static SqlDataAdapter _socialNetAccountsAdapter = null;
 
-        private static SqlCommandBuilder _userCommandBuilder = null;
-        private static SqlCommandBuilder _todoCommandBuilder = null;
-        private static SqlCommandBuilder _noteCommandBuilder = null;
-        private static SqlCommandBuilder _socialNetCommandBuilder = null;
-
-        private static Dictionary<SocialNetworkAccounts, int> _accountsIds = null;
+        private static Dictionary<SocialNetworkAccounts, Guid> _accountsIds = null;
 
         static MsSqlDAL()
         {
+            _database = new DataSet("dbDailyHelper");
             _connection = new SqlConnection(_connectionString);
 
             _userAdapter = new SqlDataAdapter(@"SELECT * FROM tbUser", _connectionString);
             _todoAdapter = new SqlDataAdapter(@"SELECT * FROM tbTodo", _connectionString);
             _noteAdapter = new SqlDataAdapter(@"SELECT * FROM tbNote", _connectionString);
-            _socialNetAccountsAdapter = new SqlDataAdapter(@"SELECT * FROM tbAccountsInfo", _connectionString);
+            _socialNetAccountsAdapter = new SqlDataAdapter(@"SELECT * FROM tbAccountInfo", _connectionString);
 
-            _userCommandBuilder = new SqlCommandBuilder(_userAdapter);
-            _todoCommandBuilder = new SqlCommandBuilder(_todoAdapter);
-            _noteCommandBuilder = new SqlCommandBuilder(_noteAdapter);
-            _socialNetCommandBuilder = new SqlCommandBuilder(_socialNetAccountsAdapter);
-
-            //User table updates
-            _userAdapter.InsertCommand = _userCommandBuilder.GetInsertCommand(true);
-            _userAdapter.UpdateCommand = _userCommandBuilder.GetUpdateCommand(true);
-            _userAdapter.DeleteCommand = _userCommandBuilder.GetDeleteCommand(true);
-
-            //Note table updates
-            _noteAdapter.InsertCommand = _noteCommandBuilder.GetInsertCommand(true);
-            _noteAdapter.UpdateCommand = _noteCommandBuilder.GetUpdateCommand(true);
-            _noteAdapter.DeleteCommand = _noteCommandBuilder.GetDeleteCommand(true);
-
-            //Todo table updates
-            _todoAdapter.InsertCommand = _todoCommandBuilder.GetInsertCommand(true);
-            _todoAdapter.UpdateCommand = _todoCommandBuilder.GetUpdateCommand(true);
-            _todoAdapter.DeleteCommand = _todoCommandBuilder.GetDeleteCommand(true);
-
-            //Social network accounts table updates
-            _socialNetAccountsAdapter.InsertCommand = _socialNetCommandBuilder.GetInsertCommand(true);
-            _socialNetAccountsAdapter.UpdateCommand = _socialNetCommandBuilder.GetUpdateCommand(true);
-            _socialNetAccountsAdapter.DeleteCommand = _socialNetCommandBuilder.GetDeleteCommand(true);
+            SqlCommandBuilder _userCommandBuilder = new SqlCommandBuilder(_userAdapter);
+            SqlCommandBuilder _todoCommandBuilder = new SqlCommandBuilder(_todoAdapter);
+            SqlCommandBuilder _noteCommandBuilder = new SqlCommandBuilder(_noteAdapter);
+            SqlCommandBuilder _socialNetCommandBuilder = new SqlCommandBuilder(_socialNetAccountsAdapter);
 
             _userAdapter.Fill(_database, "tbUser");
             _todoAdapter.Fill(_database, "tbTodo");
             _noteAdapter.Fill(_database, "tbNote");
-            _socialNetAccountsAdapter.Fill(_database, "tbAccountsInfo");
+            _socialNetAccountsAdapter.Fill(_database, "tbAccountInfo");
 
             FillAccountsMappings();
+            FillDbRelations();
+        }
+
+        private static void FillDbRelations()
+        {
+            DataRelation todoUser = new DataRelation("TodoUser", _database.Tables["tbUser"].Columns["Id"],
+                                                                 _database.Tables["tbTodo"].Columns["IdUser"]);
+            DataRelation noteUser = new DataRelation("NoteUser", _database.Tables["tbUser"].Columns["Id"],
+                                                                 _database.Tables["tbNote"].Columns["IdUser"]);
+            DataRelation accountsInfoUser = new DataRelation("AccountInfoUser", _database.Tables["tbUser"].Columns["Id"],
+                                                                                 _database.Tables["tbAccountInfo"].Columns["IdUser"]);
+            _database.Relations.AddRange(new DataRelation[] { todoUser, noteUser, accountsInfoUser });
         }
 
         private static void FillAccountsMappings()
         {
-            _accountsIds = new Dictionary<SocialNetworkAccounts, int>();
+            _accountsIds = new Dictionary<SocialNetworkAccounts, Guid>();
             SqlDataAdapter tempAdapter = new SqlDataAdapter(@"SELECT * FROM tbAccount", _connectionString);
-            DataTable tempTable = new DataTable("tbAccount");
+            DataTable tempTable = new DataTable("Account");
             tempAdapter.Fill(tempTable);
             foreach (DataRow row in tempTable.Rows)
             {
-                int id = (int)row["Id"];
+                Guid id = (Guid)row["Id"];
                 string accountName = (string)row["Account"];
                 SocialNetworkAccounts account = (SocialNetworkAccounts)Enum.Parse(typeof(SocialNetworkAccounts), accountName);
                 _accountsIds.Add(account, id);
@@ -88,15 +76,15 @@ namespace Server.DataLayer
         public User GetUser(string email)
         {
             User user = new User();
-            DataRow[] rows = _database.Tables["tbUser"].Select("Email=");
+            DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Email='{0}'", email));
             if (rows == null || rows.Length == 0)
             {
                 return null;
             }
-            string id = (string)rows[0]["Id"];
-            string password = (string)rows[0]["Password"];
+            Guid id = (Guid)rows[0]["Id"];
+            string password = (string)rows[0]["Pass"];
 
-            user.Id = Guid.Parse(id);
+            user.Id = id;
             user.Email = email;
             user.Password = password;
 
@@ -114,15 +102,52 @@ namespace Server.DataLayer
                 DataRow row = _database.Tables["tbUser"].NewRow();
                 row["Id"] = user.Id;
                 row["Email"] = user.Email;
-                row["Password"] = user.Password;
+                row["Pass"] = user.Password;
                 _database.Tables["tbUser"].Rows.Add(row);
-                _database.AcceptChanges();
+                _userAdapter.Update(_database.Tables["tbUser"]); //_database, "tbUser"
+                //_database.AcceptChanges();
             }
-            catch (SqlException ex)
+            catch (SqlException ex) // if such email already exists
             {
                 _database.RejectChanges();
                 throw ex;
             }
+        }
+
+        /// <summary>
+        /// Pushes all local changes to database
+        /// </summary>
+        private void Update()
+        {
+            
+            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
+            _socialNetAccountsAdapter.Update(_database.Tables["tbAccountInfo"]); //_database, "tbAccountInfo"
+        }
+
+
+        public void SaveNote(User user, Note note)
+        {
+        }
+
+        public void RemoveNote(User user, Note note)
+        {
+        }
+
+        public void UpdateNote(User user, Note note)
+        {
+        }
+
+        public void SaveTodoItem(User user, TodoItem item)
+        {
+        }
+
+        public void RemoveTodoItem(User user, TodoItem item)
+        {
+        }
+
+        public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
+        {
         }
     }
 }

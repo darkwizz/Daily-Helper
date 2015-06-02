@@ -20,11 +20,14 @@ namespace Server.Entities
         public Dictionary<Guid, Note> Notes { get; set; }
         [DataMember]
         public Dictionary<Guid, TodoItem> TodoItems { get; set; }
+        [DataMember]
+        public Dictionary<Guid, SocialNetworkAccountInfo> Accounts { get; set; }
 
         public User()
         {
             Notes = new Dictionary<Guid, Note>();
             TodoItems = new Dictionary<Guid, TodoItem>();
+            Accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
         }
     }
 }

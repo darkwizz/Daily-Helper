@@ -12,7 +12,7 @@ namespace Server.ServiceContracts
     interface IUserSaverService
     {
         [OperationContract]
-        void RegisterUser(User user);
+        bool RegisterUser(User user);
         [OperationContract]
         User GetUser(string email);
     }

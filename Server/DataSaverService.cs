@@ -15,7 +15,7 @@ namespace Server
     class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService, ISocialNetworkAccountInfoSaverService
     {
         //private static DataSaverService _saverService;
-        private IDAL _dataLayer = new DALStub();
+        private IDAL _dataLayer = new MsSqlDAL();
 
         //private DataSaverService(IDAL dataLayer)
         //{

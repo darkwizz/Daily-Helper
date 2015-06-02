@@ -36,6 +36,11 @@ namespace DailyHelperLibrary.Entities
 
         public void SetAccountState(SocialNetworkAccounts account, bool isActive)
         {
+            if (!HasAccount(account))
+            {
+                Console.WriteLine("User hasn't this account"); // logging
+                return;
+            }
             _accounts[account].IsActive = isActive;
         }
 
@@ -45,11 +50,19 @@ namespace DailyHelperLibrary.Entities
             _accounts[account].Password = password;
         }
 
+        public bool HasAccount(SocialNetworkAccounts account)
+        {
+            return _accounts[account].Login != "";
+        }
+
         public IEnumerable<SocialNetworkAccountInfo> Accounts
         {
             get
             {
-                return _accounts.Values;
+                IEnumerable<SocialNetworkAccountInfo> accounts = from item in _accounts.Values
+                                                                 where item.Login != ""
+                                                                 select item;
+                return accounts;
             }
         }
 

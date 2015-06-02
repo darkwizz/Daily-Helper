@@ -7,7 +7,7 @@ using Server.Entities;
 
 namespace Server.DataLayer
 {
-    interface IDAL: IDisposable
+    interface IDAL
     {
         // User
         User GetUser(string email);
@@ -25,7 +25,5 @@ namespace Server.DataLayer
         void RemoveTodoItem(User user, TodoItem item);
         // Social Networks
         void SaveAccountInfo(User user, SocialNetworkAccountInfo info);
-
-        void Close();
     }
 }
