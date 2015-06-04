@@ -25,9 +25,9 @@ namespace Server.Entities
 
         public User()
         {
-            Notes = new Dictionary<Guid, Note>();
-            TodoItems = new Dictionary<Guid, TodoItem>();
-            Accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
+        //    Notes = new Dictionary<Guid, Note>();
+        //    TodoItems = new Dictionary<Guid, TodoItem>();
+        //    Accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
         }
     }
 }

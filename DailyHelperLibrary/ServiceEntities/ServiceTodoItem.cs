@@ -8,7 +8,7 @@ using DailyHelperLibrary.Entities;
 
 namespace DailyHelperLibrary.ServiceEntities
 {
-    [DataContract(Namespace = "Server/")]
+    [DataContract(Name = "TodoItem", Namespace = "Server/")]
     class ServiceTodoItem
     {
         public TodoItem TodoItem

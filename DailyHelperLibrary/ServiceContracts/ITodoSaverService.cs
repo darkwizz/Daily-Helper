@@ -14,6 +14,6 @@ namespace DailyHelperLibrary.ServiceContracts
         [OperationContract]
         void SaveTodoItem(ServiceUser user, ServiceTodoItem item);
         [OperationContract]
-        void RemoveTodoItem(ServiceUser user, ServiceTodoItem item);
+        void RemoveTodoItem(ServiceTodoItem item);
     }
 }

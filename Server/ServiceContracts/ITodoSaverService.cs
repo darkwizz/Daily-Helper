@@ -14,6 +14,6 @@ namespace Server.ServiceContracts
         [OperationContract]
         void SaveTodoItem(User user, TodoItem item);
         [OperationContract]
-        void RemoveTodoItem(User user, TodoItem item);
+        void RemoveTodoItem(TodoItem item);
     }
 }

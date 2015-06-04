@@ -19,8 +19,8 @@ namespace DailyHelperLibrary.Entities
 
         public User(string email, string password)
         {
-            email = Email;
-            password = Password;
+            Email = email;
+            Password = password;
             Id = Guid.NewGuid();
             Notes = new Dictionary<Guid, Note>();
             TodoItems = new Dictionary<Guid, TodoItem>();

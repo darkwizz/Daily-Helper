@@ -70,16 +70,16 @@ namespace Server
             _dataLayer.SaveNote(user, note);
         }
 
-        void INoteSaverService.RemoveNote(User user, Note note)
+        void INoteSaverService.RemoveNote(Note note)
         {
             Console.WriteLine("Remove existing note...");
-            _dataLayer.RemoveNote(user, note);
+            _dataLayer.RemoveNote(note);
         }
 
-        void INoteSaverService.EditNote(User user, Note note)
+        void INoteSaverService.EditNote(Note note)
         {
             Console.WriteLine("Edit existing note...");
-            _dataLayer.UpdateNote(user, note);
+            _dataLayer.UpdateNote(note);
         }
 
         void ITodoSaverService.SaveTodoItem(User user, TodoItem item)
@@ -88,10 +88,10 @@ namespace Server
             _dataLayer.SaveTodoItem(user, item);
         }
 
-        void ITodoSaverService.RemoveTodoItem(User user, TodoItem item)
+        void ITodoSaverService.RemoveTodoItem(TodoItem item)
         {
             Console.WriteLine("Remove existing todo item...");
-            _dataLayer.RemoveTodoItem(user, item);
+            _dataLayer.RemoveTodoItem(item);
         }
 
         void ISocialNetworkAccountInfoSaverService.UpdateAccountInfo(User user, SocialNetworkAccountInfo info)

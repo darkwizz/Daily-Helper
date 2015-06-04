@@ -22,6 +22,7 @@ namespace Server.DataLayer
         private static SqlDataAdapter _socialNetAccountsAdapter = null;
 
         private static Dictionary<SocialNetworkAccounts, Guid> _accountsIds = null;
+        private static Dictionary<Guid, SocialNetworkAccounts> _idsAccounts = null;
 
         static MsSqlDAL()
         {
@@ -61,6 +62,7 @@ namespace Server.DataLayer
         private static void FillAccountsMappings()
         {
             _accountsIds = new Dictionary<SocialNetworkAccounts, Guid>();
+            _idsAccounts = new Dictionary<Guid, SocialNetworkAccounts>();
             SqlDataAdapter tempAdapter = new SqlDataAdapter(@"SELECT * FROM tbAccount", _connectionString);
             DataTable tempTable = new DataTable("Account");
             tempAdapter.Fill(tempTable);
@@ -70,9 +72,12 @@ namespace Server.DataLayer
                 string accountName = (string)row["Account"];
                 SocialNetworkAccounts account = (SocialNetworkAccounts)Enum.Parse(typeof(SocialNetworkAccounts), accountName);
                 _accountsIds.Add(account, id);
+                _idsAccounts.Add(id, account);
             }
         }
 
+        // TODO
+        // add reading of all collections - Notes, TODO items and Social Network Accounts info
         public User GetUser(string email)
         {
             User user = new User();
@@ -87,6 +92,36 @@ namespace Server.DataLayer
             user.Id = id;
             user.Email = email;
             user.Password = password;
+            user.Notes = new Dictionary<Guid, Note>();
+            user.TodoItems = new Dictionary<Guid, TodoItem>();
+            user.Accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
+
+            foreach (DataRow row in rows[0].GetChildRows("NoteUser"))
+            {
+                Note note = new Note();
+                note.Id = (Guid)row["Id"];
+                note.NoteText = (string)row["NoteText"];
+                user.Notes.Add(note.Id, note);
+            }
+
+            foreach (DataRow row in rows[0].GetChildRows("TodoUser"))
+            {
+                TodoItem item = new TodoItem();
+                item.Id = (Guid)row["Id"];
+                item.TodoText = (string)row["TodoText"];
+                user.TodoItems.Add(item.Id, item);
+            }
+
+            foreach (DataRow row in rows[0].GetChildRows("AccountInfoUser"))
+            {
+                SocialNetworkAccountInfo info = new SocialNetworkAccountInfo();
+                info.Id = (Guid)row["Id"];
+                info.IsActive = (bool)row["IsActive"];
+                info.Login = (string)row["AccountLogin"];
+                info.Password = (string)row["AccountPass"];
+                info.Account = _idsAccounts[(Guid)row["IdAccount"]];
+                user.Accounts.Add(info.Id, info);
+            }
 
             return user;
         }
@@ -114,40 +149,69 @@ namespace Server.DataLayer
             }
         }
 
-        /// <summary>
-        /// Pushes all local changes to database
-        /// </summary>
-        private void Update()
-        {
-            
-            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
-            _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
-            _socialNetAccountsAdapter.Update(_database.Tables["tbAccountInfo"]); //_database, "tbAccountInfo"
-        }
-
 
         public void SaveNote(User user, Note note)
         {
+            DataRow row = _database.Tables["tbNote"].NewRow();
+            row["Id"] = note.Id;
+            row["NoteText"] = note.NoteText;
+            row["IdUser"] = user.Id;
+            _database.Tables["tbNote"].Rows.Add(row);
+            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
         }
 
-        public void RemoveNote(User user, Note note)
+        public void RemoveNote(Note note)
         {
+            DataRow[] rows = _database.Tables["tbNote"].Select("Id = '" + note.Id + "'");
+            DataRow deletedRow = rows[0];
+            deletedRow.Delete();
+            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
         }
 
-        public void UpdateNote(User user, Note note)
+        public void UpdateNote(Note note)
         {
+            DataRow[] rows = _database.Tables["tbNote"].Select("Id = '" + note.Id + "'");
+            DataRow editedRow = rows[0];
+            editedRow["NoteText"] = note.NoteText;
+            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
         }
 
         public void SaveTodoItem(User user, TodoItem item)
         {
+            DataRow row = _database.Tables["tbTodo"].NewRow();
+            row["Id"] = item.Id;
+            row["TodoText"] = item.TodoText;
+            row["IdUser"] = user.Id;
+            _database.Tables["tbTodo"].Rows.Add(row);
+            _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
         }
 
-        public void RemoveTodoItem(User user, TodoItem item)
+        public void RemoveTodoItem(TodoItem item)
         {
+            DataRow[] rows = _database.Tables["tbTodo"].Select("Id = '" + item.Id + "'");
+            DataRow deletedRow = rows[0];
+            deletedRow.Delete();
+            _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
         }
 
         public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
         {
+            DataRow[] rows = _database.Tables["tbAccountInfo"].Select("Id = ", info.Id.ToString());
+            DataRow row = rows.Length == 0 ? _database.Tables["tbAccountInfo"].NewRow() : rows[0];
+
+            row["Id"] = info.Id;
+            row["IdUser"] = user.Id;
+            row["IdAccount"] = _accountsIds[info.Account];
+            row["AccountLogin"] = info.Login;
+            row["AccountPass"] = info.Password;
+            row["IsActive"] = info.IsActive;
+
+            if (rows.Length == 0)
+            {
+                _database.Tables["tbAccountInfo"].Rows.Add(row);
+            }
+
+            _socialNetAccountsAdapter.Update(_database.Tables["tbAccountInfo"]); //_database, "tbAccountInfo"
         }
     }
 }

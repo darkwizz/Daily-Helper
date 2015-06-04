@@ -72,7 +72,7 @@
     <Compile Include="ServiceEntities\ServiceSocialNetworkAccountInfo.cs" />
     <Compile Include="ServiceEntities\ServiceTodoItem.cs" />
     <Compile Include="ServiceEntities\ServiceUser.cs" />
-    <Compile Include="SocialNetworks\SocialNetworAccountMonitorStub.cs" />
+    <Compile Include="SocialNetworks\SocialNetworkAccountMonitorStub.cs" />
     <Compile Include="SocialNetworks\SocialNetworkAccountMonitor.cs" />
     <Compile Include="SocialNetworks\SocialNetworkEventArgs.cs" />
     <Compile Include="SocialNetworks\SocialNetworkModule.cs" />

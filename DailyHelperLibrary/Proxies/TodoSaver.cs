@@ -19,9 +19,9 @@ namespace DailyHelperLibrary.Proxies
             _proxy.SaveTodoItem(user, item);
         }
 
-        public void RemoveTodoItem(User user, TodoItem item)
+        public void RemoveTodoItem(TodoItem item)
         {
-            _proxy.RemoveTodoItem(user, item);
+            _proxy.RemoveTodoItem(item);
         }
 
         public void Dispose()
@@ -39,9 +39,9 @@ namespace DailyHelperLibrary.Proxies
             {
                 Channel.SaveTodoItem(user.ServiceUser, item.ServiceTodoItem);
             }
-            public void RemoveTodoItem(User user, TodoItem item)
+            public void RemoveTodoItem(TodoItem item)
             {
-                Channel.RemoveTodoItem(user.ServiceUser, item.ServiceTodoItem);
+                Channel.RemoveTodoItem(item.ServiceTodoItem);
             }
 
             new public void Close()

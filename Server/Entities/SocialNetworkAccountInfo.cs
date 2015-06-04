@@ -28,7 +28,7 @@ namespace Server.Entities
         [DataMember]
         public string Password { get; set; }
         [DataMember]
-        public SocialNetworkAccounts ServiceAccount { get; set; }
+        public SocialNetworkAccounts Account { get; set; }
         [DataMember]
         public bool IsActive { get; set; }
     }

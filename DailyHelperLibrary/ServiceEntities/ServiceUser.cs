@@ -8,7 +8,7 @@ using DailyHelperLibrary.Entities;
 
 namespace DailyHelperLibrary.ServiceEntities
 {
-    [DataContract(Namespace = "Server/")]
+    [DataContract(Name = "User",Namespace = "Server/")]
     class ServiceUser
     {
         public User User
@@ -33,10 +33,6 @@ namespace DailyHelperLibrary.ServiceEntities
         public Dictionary<ServiceSocialNetworkAccounts, ServiceSocialNetworkAccountInfo> Accounts { get; set; }
 
         public ServiceUser()
-        {
-            Notes = new Dictionary<Guid,ServiceNote>();
-            TodoItems = new Dictionary<Guid,ServiceTodoItem>();
-            Accounts = new Dictionary<ServiceSocialNetworkAccounts, ServiceSocialNetworkAccountInfo>();
-        }
+        { }
     }
 }

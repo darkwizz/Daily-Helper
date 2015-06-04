@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DailyHelperLibrary.Entities;
 using DailyHelperLibrary.Savers;
 using DailyHelperLibrary.ServiceContracts;
+using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.Proxies
 {
@@ -42,7 +43,8 @@ namespace DailyHelperLibrary.Proxies
 
             public User GetUser(string email)
             {
-                return Channel.GetUser(email).User;
+                ServiceUser user = Channel.GetUser(email);
+                return user.User;
             }
 
             new public void Close()

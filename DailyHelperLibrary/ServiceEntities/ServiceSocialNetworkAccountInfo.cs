@@ -8,7 +8,7 @@ using DailyHelperLibrary.Entities;
 
 namespace DailyHelperLibrary.ServiceEntities
 {
-    [DataContract(Namespace = "Server/")]
+    [DataContract(Name = "SocialNetworkAccountInfo", Namespace = "Server/")]
     enum ServiceSocialNetworkAccounts
     {
         [EnumMember]

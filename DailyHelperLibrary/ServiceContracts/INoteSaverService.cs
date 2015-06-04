@@ -14,8 +14,8 @@ namespace DailyHelperLibrary.ServiceContracts
         [OperationContract]
         void SaveNote(ServiceUser user, ServiceNote note);
         [OperationContract]
-        void RemoveNote(ServiceUser user, ServiceNote note);
+        void RemoveNote(ServiceNote note);
         [OperationContract]
-        void EditNote(ServiceUser user, ServiceNote note);
+        void EditNote(ServiceNote note);
     }
 }
