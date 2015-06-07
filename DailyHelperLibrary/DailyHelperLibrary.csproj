@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Win32.TaskScheduler, Version=2.3.2.0, Culture=neutral, PublicKeyToken=0d013ddd5178a2ae, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\TaskScheduler.2.3.2\lib\net40\Microsoft.Win32.TaskScheduler.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
@@ -41,15 +45,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\OnceRunningScheduleItem.cs" />
+    <Compile Include="Entities\RegularlyRunningScheduleItem.cs" />
     <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\TodoItem.cs" />
     <Compile Include="Entry\AcceptingCheckingKeyEventArgs.cs" />
     <Compile Include="Entry\AuthorisationEventArgs.cs" />
     <Compile Include="Entry\AuthorisationModule.cs" />
     <Compile Include="EmailSender.cs" />
+    <Compile Include="Entry\ExitEventArgs.cs" />
     <Compile Include="EventResult.cs" />
     <Compile Include="IDailyHelperUI.cs" />
     <Compile Include="Entities\Note.cs" />
+    <Compile Include="IEmailSender.cs" />
     <Compile Include="Notes\NoteModuleEventArgs.cs" />
     <Compile Include="Notes\NotesModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -64,6 +72,12 @@
     <Compile Include="Savers\ISocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Savers\ITodoSaver.cs" />
     <Compile Include="Savers\IUserSaver.cs" />
+    <Compile Include="Scheduler\InnerOnceRunningScheduleItem.cs" />
+    <Compile Include="Scheduler\InnerRegularlyRunningScheduleItem.cs" />
+    <Compile Include="Scheduler\IScheduler.cs" />
+    <Compile Include="Scheduler\SchedulerModule.cs" />
+    <Compile Include="Scheduler\SchedulerModuleEventArgs.cs" />
+    <Compile Include="Scheduler\WindowsScheduler.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
     <Compile Include="ServiceContracts\ISocialNetworkAccountInfoSaverService.cs" />
     <Compile Include="ServiceContracts\ITodoSaverService.cs" />
@@ -81,7 +95,9 @@
     <Compile Include="TODO\TodoModule.cs" />
     <Compile Include="TODO\TodoModuleEventArgs.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
