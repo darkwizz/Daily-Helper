@@ -5,13 +5,15 @@ Personal Assistant
   
 HOW TO USE IT:  
 1) Downolad project;  
-2) Run Server with Admin rights;  
-3) Run Console Client;  
-4) Login => fake@mail.com  
+2) Install MS SQL Server, if not installed;  
+3) Run Server/Create DH database.sql and then Server/Create DH database tables.sql;  
+4) Run Server with Admin rights;  
+5) Run Console Client;  
+6) Login => fake@mail.com  
    Password => fake_pwd  
-     
-   Now there is a Data Layer mock, that returns this User only.  
-5) Test Daily Helper work;  
+    
+    Or you can create your own account  
+7) Test Daily Helper work;  
   
 To work on version with Scheduler there must be downloaded Task Scheduler Managed Wrapper library  
 http://taskscheduler.codeplex.com/releases/view/120747  
