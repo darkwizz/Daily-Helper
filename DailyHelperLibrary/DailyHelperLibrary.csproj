@@ -30,9 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Win32.TaskScheduler, Version=2.3.2.0, Culture=neutral, PublicKeyToken=0d013ddd5178a2ae, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\TaskScheduler.2.3.2\lib\net40\Microsoft.Win32.TaskScheduler.dll</HintPath>
+    <Reference Include="Microsoft.Win32.TaskScheduler">
+      <HintPath>..\..\Windows System Scheduler\Microsoft.Win32.TaskScheduler.dll</HintPath>
+    </Reference>
+    <Reference Include="NAudio">
+      <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -45,9 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\OnceRunningScheduleItem.cs" />
     <Compile Include="Entities\RegularlyRunningScheduleItem.cs" />
-    <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\TodoItem.cs" />
     <Compile Include="Entry\AcceptingCheckingKeyEventArgs.cs" />
     <Compile Include="Entry\AuthorisationEventArgs.cs" />
@@ -68,6 +70,11 @@
     <Compile Include="Proxies\TodoSaver.cs" />
     <Compile Include="Proxies\UserSaver.cs" />
     <Compile Include="Entities\User.cs" />
+    <Compile Include="Relax\IMusicPlayer.cs" />
+    <Compile Include="Relax\MusicStreamGetterStub.cs" />
+    <Compile Include="Relax\ReadFullyStream.cs" />
+    <Compile Include="Relax\RelaxModule.cs" />
+    <Compile Include="Relax\StreamingMusicPlayer.cs" />
     <Compile Include="Savers\INoteSaver.cs" />
     <Compile Include="Savers\ISocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Savers\ITodoSaver.cs" />
@@ -78,6 +85,7 @@
     <Compile Include="Scheduler\SchedulerModule.cs" />
     <Compile Include="Scheduler\SchedulerModuleEventArgs.cs" />
     <Compile Include="Scheduler\WindowsScheduler.cs" />
+    <Compile Include="ServiceContracts\IMusicStreamGetterService.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
     <Compile Include="ServiceContracts\ISocialNetworkAccountInfoSaverService.cs" />
     <Compile Include="ServiceContracts\ITodoSaverService.cs" />
