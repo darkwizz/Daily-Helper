@@ -7,12 +7,13 @@ HOW TO USE IT:
 1) Downolad project;  
 2) Install MS SQL Server, if not installed;  
 3) Run Server/Create DH database.sql and then Server/Create DH database tables.sql;  
-4) Run Server with Admin rights;  
-5) Update connection string to your database;
+4) Update connection string to your database in Server/DataLayer/MsSqlDAL.cs file;  
+5) Run Server with Admin rights;  
 6) Run Console Client;  
 7) Login => fake@mail.com  
     Password => fake_pwd  
     Or you can create your own account  
+  
 8) Test Daily Helper work;  
   
 To work on version with Scheduler there must be downloaded Task Scheduler Managed Wrapper library  
