@@ -9,7 +9,8 @@ namespace DailyHelperLibrary.Timer
 {
     public class TimerEventArgs: EventArgs
     {
-        public TimerCallback Tick { get; set; }
+        public Action Tick { get; set; }
+
         public TimeSpan Time { get; private set; }
 
         public TimerEventArgs(int hours, int minutes, int seconds)

@@ -16,6 +16,7 @@ namespace DailyHelperLibrary.Entities
         public string Password { get; set; }
         public Dictionary<Guid, Note> Notes { get; private set; }
         public Dictionary<Guid, TodoItem> TodoItems { get; private set; }
+        public Dictionary<Guid, OnceRunningScheduleItem> ScheduleItems { get; private set; }
 
         public User(string email, string password)
         {
@@ -24,6 +25,7 @@ namespace DailyHelperLibrary.Entities
             Id = Guid.NewGuid();
             Notes = new Dictionary<Guid, Note>();
             TodoItems = new Dictionary<Guid, TodoItem>();
+            ScheduleItems = new Dictionary<Guid, OnceRunningScheduleItem>();
 
             // Init all available accounts by default values
             _accounts = new Dictionary<SocialNetworkAccounts, SocialNetworkAccountInfo>();
@@ -71,6 +73,7 @@ namespace DailyHelperLibrary.Entities
             Id = user.Id;
             Email = user.Email;
             Password = user.Password;
+            ScheduleItems = new Dictionary<Guid, OnceRunningScheduleItem>();
 
             Notes = new Dictionary<Guid, Note>();
             foreach (var note in user.Notes.Values)
@@ -129,6 +132,5 @@ namespace DailyHelperLibrary.Entities
                 return user;
             }
         }
-
     }
 }
