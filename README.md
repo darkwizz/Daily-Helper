@@ -16,11 +16,13 @@ HOW TO USE IT:
   
 8) Test Daily Helper work;  
   
+  To provide correct work of MusicStreamGetterStub go to its source and change path to file to your favorite song.
+  
 To work on version with Scheduler there must be downloaded Task Scheduler Managed Wrapper library  
 http://taskscheduler.codeplex.com/releases/view/120747  
   or you can load it via NuGet as TaskScheduler  
     
-  To work with this versions you must download NAudio library. You can do this with NuGet as NAudio
+  To work with this version you must download NAudio library. You can do this with NuGet as NAudio;
   
   All docs you can find there.  
   
