@@ -11,8 +11,7 @@ namespace Server.DataLayer
 {
     class MsSqlDAL: IDAL
     {
-        private static string _connectionString = @"Data Source=ARTUR-PC\SQLSERVER; Database=dbDailyHelper; " +
-                                                    @"Integrated Security=SSPI"; // SSPI <=> true
+        private static string _connectionString = @"Your connection string";
         private static SqlConnection _connection = null;
         private static DataSet _database = null;
 
