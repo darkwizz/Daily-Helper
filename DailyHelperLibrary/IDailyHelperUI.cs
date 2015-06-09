@@ -34,6 +34,10 @@ namespace DailyHelperLibrary
         // TODO Module
         event Func<TodoModuleEventArgs, EventResult> AddNewTodoSelect;
         event Func<TodoModuleEventArgs, EventResult> CompleteTodoSelect;
+        // Relax Module
+        event Func<EventResult> RelaxChoose;
+        event Func<EventResult> NextChoose;
+        event Func<EventResult> StopChoose;
 
         void RunMainDialogProc();
     }

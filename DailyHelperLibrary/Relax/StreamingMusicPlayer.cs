@@ -9,16 +9,16 @@ using NAudio.Wave;
 
 namespace DailyHelperLibrary.Relax
 {
+    enum StreamingPlaybackState
+    {
+        Stopped,
+        Playing,
+        Buffering,
+        Paused
+    }
+
     class StreamingMusicPlayer: IMusicPlayer
     {
-        private static enum StreamingPlaybackState
-        {
-            Stopped,
-            Playing,
-            Buffering,
-            Paused
-        }
-
         private BufferedWaveProvider _bufferedWaveProvider = null;
         private IWavePlayer _waveOut = null;
         private volatile StreamingPlaybackState _playbackState;
@@ -26,6 +26,15 @@ namespace DailyHelperLibrary.Relax
         private Stream _currentStream = null;
         private System.Threading.Timer _timer = null;
         private byte[] _buffer = new byte[1024 * 64];
+        private ManualResetEvent _manualEvent = new ManualResetEvent(true);
+
+        public StreamingPlaybackState PlaybackState
+        {
+            get
+            {
+                return _playbackState;
+            }
+        }
         
         public void Pause()
         {
@@ -50,11 +59,19 @@ namespace DailyHelperLibrary.Relax
                         _waveOut = null;
                     }
                     _timer.Dispose();
+
+                    _bufferedWaveProvider.ClearBuffer();
+                    _bufferedWaveProvider = null;
+
+                    _manualEvent.WaitOne();
+                    _manualEvent.Reset();
                     _currentStream.Close();
+                    _manualEvent.Set();
                 }
             }
         }
 
+        // Вся беда с потоками - нужно как-то предусмотреть
         public void Play(Stream stream)
         {
             if (stream == null)
@@ -63,7 +80,12 @@ namespace DailyHelperLibrary.Relax
                 return;
             }
             _playbackState = StreamingPlaybackState.Buffering;
+
+            _manualEvent.WaitOne();
+            _manualEvent.Reset();
             _currentStream = stream;
+            _manualEvent.Set();
+
             ThreadPool.QueueUserWorkItem((state) => AddSamples(_currentStream), null);
             _timer = new System.Threading.Timer((state) => PlaybackCallback(), null, TimeSpan.FromMilliseconds(0),
                 TimeSpan.FromMilliseconds(250));
@@ -79,7 +101,7 @@ namespace DailyHelperLibrary.Relax
                 {
                     if (IsBufferNearlyFull)
                     {
-                        Console.WriteLine("Buffer getting full, taking a break");
+                        //Console.WriteLine("Buffer getting full, taking a break"); // logging
                         Thread.Sleep(750);
                     }
                     else
@@ -87,7 +109,17 @@ namespace DailyHelperLibrary.Relax
                         Mp3Frame frame;
                         try
                         {
+                            _manualEvent.WaitOne();
+                            _manualEvent.Reset();
+                            //if (!_currentStream.CanRead)
+                            //{
+                            //    Console.WriteLine("Can't read");
+                            //    _manualEvent.Set();
+                            //    break;
+                            //}
                             frame = Mp3Frame.LoadFromStream(readFullyStream);
+                            _manualEvent.Set();
+
                             if (frame == null)
                             {
                                 _fullyDownloaded = true;
@@ -96,6 +128,7 @@ namespace DailyHelperLibrary.Relax
                         }
                         catch (EndOfStreamException ex)
                         {
+                            _manualEvent.Set();
                             _fullyDownloaded = true;
                             Console.WriteLine("End of stream " + ex);
                             // reached the end of the MP3 file / stream
@@ -120,11 +153,6 @@ namespace DailyHelperLibrary.Relax
                 //Debug.WriteLine("Exiting");
                 // was doing this in a finally block, but for some reason
                 // we are hanging on response stream .Dispose so never get there
-                decompressor.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Some exception " + ex);
             }
             finally
             {

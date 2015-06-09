@@ -12,6 +12,7 @@ using System.Threading;
 using DailyHelperLibrary.Timer;
 using DailyHelperLibrary.TODO;
 using DailyHelperLibrary.Scheduler;
+using DailyHelperLibrary.Relax;
 
 namespace DailyHelperConsoleModule
 {
@@ -41,6 +42,8 @@ namespace DailyHelperConsoleModule
 
             TimerModule timerModule = new TimerModule();
 
+            RelaxModule relaxModule = new RelaxModule();
+
             IDailyHelperUI ui = new ConsoleUIModule(); // new User("toxa@gmail.com", "12345")
             ui.Logout += authModule.OnExited;
             ui.DeleteScheduleItem += schedulerModule.OnDeletedScheduleItem;
@@ -56,6 +59,9 @@ namespace DailyHelperConsoleModule
             ui.StartTimerSelect += timerModule.OnTimerStarted;
             ui.AddNewTodoSelect += todoModule.OnTodoAdded;
             ui.CompleteTodoSelect += todoModule.OnTodoCompleted;
+            ui.RelaxChoose += relaxModule.OnRelaxChosen;
+            ui.NextChoose += relaxModule.OnNextChosen;
+            ui.StopChoose += relaxModule.OnStopChosen;
 
             ui.RunMainDialogProc();
             // if connection is failed before these Close(), but after at least one executing of service operation,

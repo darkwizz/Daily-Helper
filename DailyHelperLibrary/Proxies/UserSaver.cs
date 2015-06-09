@@ -44,6 +44,10 @@ namespace DailyHelperLibrary.Proxies
             public User GetUser(string email)
             {
                 ServiceUser user = Channel.GetUser(email);
+                if (user == null)
+                {
+                    return null;
+                }
                 return user.User;
             }
 
