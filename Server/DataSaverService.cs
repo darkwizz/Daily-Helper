@@ -8,14 +8,27 @@ using Server.Entities;
 using Server.ServiceContracts;
 using Server.DataLayer;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace Server
 {
     [ServiceBehavior(Namespace = "Server/")]
-    class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService, ISocialNetworkAccountInfoSaverService
+    class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService,
+        ISocialNetworkAccountInfoSaverService, IMusicStreamGetterService
     {
         //private static DataSaverService _saverService;
         private IDAL _dataLayer = new MsSqlDAL();
+        private static List<string> _sounds = new List<string>();
+
+        static DataSaverService()
+        {
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Deep Purple - Highway Star.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Deep Purple - Burn.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Deep Purple - Anya.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Blue Oyster Cult – Dancin' In The Ruins.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Iron Maiden - Mother Russia.mp3");
+            _sounds.AddRange(Directory.GetFiles("../../Relax Sounds"));
+        }
 
         //private DataSaverService(IDAL dataLayer)
         //{
@@ -97,6 +110,12 @@ namespace Server
         void ISocialNetworkAccountInfoSaverService.UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
         {
             Console.WriteLine("Updating user account info...");
+        }
+
+        Stream IMusicStreamGetterService.GetMusicStream()
+        {
+            int song = (new Random()).Next(_sounds.Count);
+            return new FileStream(_sounds[song], FileMode.Open);
         }
     }
 }

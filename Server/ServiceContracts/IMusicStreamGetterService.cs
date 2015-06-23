@@ -6,7 +6,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DailyHelperLibrary.ServiceContracts
+namespace Server.ServiceContracts
 {
     [ServiceContract(Name = "IMusicStreamGetterService", Namespace = "Server/")]
     interface IMusicStreamGetterService

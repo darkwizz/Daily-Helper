@@ -65,6 +65,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Entry\RegistrationEventArgs.cs" />
     <Compile Include="Entry\RegistrationModule.cs" />
+    <Compile Include="Proxies\MusicStreamGetter.cs" />
     <Compile Include="Proxies\NoteSaver.cs" />
     <Compile Include="Proxies\SocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Proxies\TodoSaver.cs" />

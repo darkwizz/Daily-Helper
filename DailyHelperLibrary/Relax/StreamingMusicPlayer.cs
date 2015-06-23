@@ -27,6 +27,7 @@ namespace DailyHelperLibrary.Relax
         private System.Threading.Timer _timer = null;
         private byte[] _buffer = new byte[1024 * 64];
         private ManualResetEvent _manualEvent = new ManualResetEvent(true);
+        private bool _isInitted = false;
 
         public StreamingPlaybackState PlaybackState
         {
@@ -125,6 +126,7 @@ namespace DailyHelperLibrary.Relax
                                 _fullyDownloaded = true;
                                 break;
                             }
+                            //Console.WriteLine("Bit rate => " + frame.BitRate);
                         }
                         catch (EndOfStreamException ex)
                         {
@@ -186,9 +188,12 @@ namespace DailyHelperLibrary.Relax
             {
                 if (_waveOut == null && _bufferedWaveProvider != null)
                 {
-                    //Debug.WriteLine("Creating WaveOut Device");
+                    //Console.WriteLine("Creating WaveOut Device");
                     _waveOut = new WaveOutEvent();
+                    _isInitted = false;
                     _waveOut.Init(_bufferedWaveProvider);
+                    _isInitted = true;
+                    //Console.WriteLine("After INIT");
                 }
                 else if (_bufferedWaveProvider != null)
                 {
@@ -213,6 +218,10 @@ namespace DailyHelperLibrary.Relax
 
         private void Play()
         {
+            if (!_isInitted)
+            {
+                return;
+            }
             _waveOut.Play();
             Console.WriteLine("Played...");
             //Debug.WriteLine(String.Format("Started playing, waveOut.PlaybackState={0}", waveOut.PlaybackState));

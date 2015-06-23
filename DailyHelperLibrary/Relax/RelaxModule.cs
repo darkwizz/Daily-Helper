@@ -5,13 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DailyHelperLibrary.Proxies;
 using DailyHelperLibrary.ServiceContracts;
 
 namespace DailyHelperLibrary.Relax
 {
     public class RelaxModule
     {
-        private IMusicStreamGetterService _musicGetter = new MusicStreamGetterStub();
+        private IMusicStreamGetterService _musicGetter = new MusicStreamGetter();
         private IMusicPlayer _musicPlayer = new StreamingMusicPlayer();
 
         public EventResult OnRelaxChosen()

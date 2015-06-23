@@ -21,12 +21,26 @@ namespace Server
             //DataSaverService saverService = DataSaverService.GetSaverService(new DALStub());
             //ServiceHost host = new ServiceHost(saverService);
 
-            ServiceHost host = new ServiceHost(typeof(DataSaverService));
-            Console.WriteLine("Listening address: " + host.BaseAddresses[0]);
-            host.Open();
-            Console.WriteLine("Server has started listening...");
-            Console.ReadKey();
-            host.Close();
+            ServiceHost host = null;
+            try
+            {
+                host = new ServiceHost(typeof(DataSaverService));
+                Console.WriteLine("Listening address: " + host.BaseAddresses[0]);
+                host.Open();
+                Console.WriteLine("Server has started listening...");
+                Console.ReadKey();
+            }
+            catch (CommunicationException ex)
+            {
+                Console.WriteLine("Error with " + ex);
+            }
+            finally
+            {
+                if (host != null)
+                {
+                    host.Close();
+                }
+            }
         }
 
         // TESTS
