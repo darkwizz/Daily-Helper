@@ -10,6 +10,7 @@ HOW TO USE IT:
 4) Update connection string to your database in Server/DataLayer/MsSqlDAL.cs file;  
 5) Run Server with Admin rights;  
 6) Run Console Client;  
+  // In this version Server and Client must be run on one machine through WCF security configuration problems  
 7) Login => fake@mail.com  
     Password => fake_pwd  
     Or you can create your own account  
