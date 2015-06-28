@@ -12,7 +12,7 @@ namespace DailyHelperLibrary.ServiceContracts
     interface IUserSaverService
     {
         [OperationContract]
-        void RegisterUser(ServiceUser user);
+        bool RegisterUser(ServiceUser user);
         [OperationContract]
         ServiceUser GetUser(string email);
     }

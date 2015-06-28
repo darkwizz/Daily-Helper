@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using DailyHelperLibrary.Entities;
 using DailyHelperLibrary.Savers;
 using DailyHelperLibrary.ServiceContracts;
+using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.Proxies
 {
@@ -14,9 +15,9 @@ namespace DailyHelperLibrary.Proxies
     {
         private UserSaverProxy _proxy = new UserSaverProxy();
 
-        public void RegisterUser(User user)
+        public bool RegisterUser(User user)
         {
-            _proxy.RegisterUser(user);
+            return _proxy.RegisterUser(user);
         }
 
         public User GetUser(string email)
@@ -35,14 +36,19 @@ namespace DailyHelperLibrary.Proxies
                 base("SaveUserEndpoint")
             { }
 
-            public void RegisterUser(User user)
+            public bool RegisterUser(User user)
             {
-                Channel.RegisterUser(user.ServiceUser);
+                return Channel.RegisterUser(user.ServiceUser);
             }
 
             public User GetUser(string email)
             {
-                return Channel.GetUser(email).User;
+                ServiceUser user = Channel.GetUser(email);
+                if (user == null)
+                {
+                    return null;
+                }
+                return user.User;
             }
 
             new public void Close()
@@ -53,7 +59,7 @@ namespace DailyHelperLibrary.Proxies
                 }
                 catch (CommunicationException ex)
                 {
-                    Console.WriteLine("Some problems with connection. " + ex.Message); // logging
+                    Console.WriteLine("Can't close connection. " + ex.Message); // logging
                 }
             }
         }

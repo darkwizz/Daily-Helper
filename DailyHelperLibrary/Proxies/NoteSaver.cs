@@ -19,14 +19,14 @@ namespace DailyHelperLibrary.Proxies
             _proxy.SaveNote(user, note);
         }
 
-        public void EditNote(User user, Note note)
+        public void EditNote(Note note)
         {
-            _proxy.EditNote(user, note);
+            _proxy.EditNote(note);
         }
 
-        public void RemoveNote(User user, Note note)
+        public void RemoveNote(Note note)
         {
-            _proxy.RemoveNote(user, note);
+            _proxy.RemoveNote(note);
         }
 
         public void Dispose()
@@ -46,14 +46,14 @@ namespace DailyHelperLibrary.Proxies
                 Channel.SaveNote(user.ServiceUser, note.ServiceNote);
             }
 
-            public void EditNote(User user, Note note)
+            public void EditNote(Note note)
             {
-                Channel.EditNote(user.ServiceUser, note.ServiceNote);
+                Channel.EditNote(note.ServiceNote);
             }
 
-            public void RemoveNote(User user, Note note)
+            public void RemoveNote(Note note)
             {
-                Channel.RemoveNote(user.ServiceUser, note.ServiceNote);
+                Channel.RemoveNote(note.ServiceNote);
             }
 
             new public void Close()

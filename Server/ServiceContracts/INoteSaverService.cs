@@ -14,8 +14,8 @@ namespace Server.ServiceContracts
         [OperationContract]
         void SaveNote(User user, Note note);
         [OperationContract]
-        void RemoveNote(User user, Note note);
+        void RemoveNote(Note note);
         [OperationContract]
-        void EditNote(User user, Note note);
+        void EditNote(Note note);
     }
 }

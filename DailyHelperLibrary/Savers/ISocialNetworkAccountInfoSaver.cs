@@ -7,9 +7,8 @@ using DailyHelperLibrary.Entities;
 
 namespace DailyHelperLibrary.Savers
 {
-    public interface IUserSaver
+    public interface ISocialNetworkAccountInfoSaver
     {
-        bool RegisterUser(User user);
-        User GetUser(string email);
+        void UpdateAccountInfo(User user, SocialNetworkAccountInfo info);
     }
 }

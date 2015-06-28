@@ -5,17 +5,24 @@ Personal Assistant
   
 HOW TO USE IT:  
 1) Downolad project;  
-2) Run Server with Admin rights;  
-3) Run Console Client;  
-4) Login => fake@mail.com  
-   Password => fake_pwd  
-     
-   Now there is a Data Layer mock, that returns this User only.  
-5) Test Daily Helper work;  
+2) Install MS SQL Server, if not installed;  
+3) Run Server/Create DH database.sql and then Server/Create DH database tables.sql;  
+4) Update connection string to your database in Server/DataLayer/MsSqlDAL.cs file;  
+5) Run Server with Admin rights;  
+6) Run Console Client;  
+7) Login => fake@mail.com  
+    Password => fake_pwd  
+    Or you can create your own account  
+  
+8) Test Daily Helper work;  
+  
+  To provide correct work of MusicStreamGetterStub go to its source and change path to file to your favorite song.
   
 To work on version with Scheduler there must be downloaded Task Scheduler Managed Wrapper library  
 http://taskscheduler.codeplex.com/releases/view/120747  
   or you can load it via NuGet as TaskScheduler  
+    
+  To work with this version you must download NAudio library. You can do this with NuGet as NAudio;
   
   All docs you can find there.  
   

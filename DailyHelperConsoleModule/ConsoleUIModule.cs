@@ -30,6 +30,9 @@ namespace DailyHelperConsoleModule
         public event Func<AuthorisationEventArgs, EventResult> ForgotPassword;
         public event Func<TodoModuleEventArgs, EventResult> AddNewTodoSelect;
         public event Func<TodoModuleEventArgs, EventResult> CompleteTodoSelect;
+        public event Func<EventResult> RelaxChoose;
+        public event Func<EventResult> NextChoose;
+        public event Func<EventResult> StopChoose;
 
         private User _user;
         private List<Note> _notes;
@@ -100,6 +103,11 @@ namespace DailyHelperConsoleModule
 
                     case "4":
                         GoInSchedulerModule();
+                        break;
+
+
+                    case "5":
+                        GoInRelaxModule();
                         break;
 
 
@@ -529,7 +537,7 @@ namespace DailyHelperConsoleModule
                             else
                             {
                                 item = _todoItems[itemNumber - 1];
-                                _notes.RemoveAt(itemNumber - 1);
+                                _todoItems.RemoveAt(itemNumber - 1);
 
                                 args = new TodoModuleEventArgs(_user, item);
 
@@ -562,6 +570,36 @@ namespace DailyHelperConsoleModule
 
                 Console.WriteLine("Press any key to continue...");
                 Console.ReadKey();
+            }
+        }
+
+        private void GoInRelaxModule()
+        {
+            string choice;
+            while (true)
+            {
+                Console.Clear();
+                ShowRelaxMenu();
+                Console.Write("What is your choice: ");
+                choice = Console.ReadLine();
+                switch (choice)
+                {
+                    case "1":
+                        RelaxChoose();
+                        break;
+                    case "2":
+                        StopChoose();
+                        break;
+                    case "3":
+                        NextChoose();
+                        break;
+                    case "0":
+                        StopChoose();
+                        return;
+                    default:
+                        Console.WriteLine("No such function");
+                        break;
+                }
             }
         }
 
@@ -696,6 +734,7 @@ namespace DailyHelperConsoleModule
                           "2 - go to timer module;\n" +
                           "3 - go to TODO module;\n" +
                           "4 - go to Scheduler module;\n" +
+                          "5 - go to Relax module;\n" +
                           "0 - to log out;\n" +
                           "-1 - to exit;\n";
             Console.WriteLine(menu);
@@ -727,6 +766,15 @@ namespace DailyHelperConsoleModule
                           "3 - to watch all Schedule items;\n" +
                           "4 - to remove Schedule Item from scheduling;\n" +
                           "0 - to exit from Scheduler module;\n";
+            Console.WriteLine(menu);
+        }
+
+        private void ShowRelaxMenu()
+        {
+            string menu = "1 - to relax;\n" +
+                          "2 - to stop;\n" +
+                          "3 - to next music;\n" +
+                          "0 - to exit from Relax module;\n";
             Console.WriteLine(menu);
         }
     }

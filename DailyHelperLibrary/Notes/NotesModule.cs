@@ -43,7 +43,7 @@ namespace DailyHelperLibrary.Notes
             Note note = e.Note;
             try
             {
-                _saverService.RemoveNote(user, note);
+                _saverService.RemoveNote(note);
                 user.Notes.Remove(note.Id);
                 return new EventResult(true);
             }
@@ -61,7 +61,7 @@ namespace DailyHelperLibrary.Notes
             Note note = e.Note;
             try
             {
-                _saverService.EditNote(user, note);
+                _saverService.EditNote(note);
                 user.Notes[note.Id] = note;
                 return new EventResult(true);
             }

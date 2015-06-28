@@ -26,14 +26,14 @@ namespace Server.DataLayer
             Console.WriteLine("Note of user {0} has been saved", user.Email);
         }
 
-        public void RemoveNote(User user, Note note)
+        public void RemoveNote(Note note)
         {
-            Console.WriteLine("Note of user {0} has been removed", user.Email);
+            Console.WriteLine("Note {0} has been removed", note.NoteText);
         }
 
-        public void UpdateNote(User user, Note note)
+        public void UpdateNote(Note note)
         {
-            Console.WriteLine("Note of user {0} has been updated", user.Email);
+            Console.WriteLine("Note {0} has been updated", note.NoteText);
         }
 
         public void SaveTodoItem(User user, TodoItem item)
@@ -41,9 +41,14 @@ namespace Server.DataLayer
             Console.WriteLine("TODO item of user {0} has been saved", user.Email);
         }
 
-        public void RemoveTodoItem(User user, TodoItem item)
+        public void RemoveTodoItem(TodoItem item)
         {
-            Console.WriteLine("TODO item of user {0} has been removed", user.Email);
+            Console.WriteLine("TODO item {0} has been removed", item.TodoText);
+        }
+
+        public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
+        {
+            Console.WriteLine("Update user social network account info...");
         }
     }
 }

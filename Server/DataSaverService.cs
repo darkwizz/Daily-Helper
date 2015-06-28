@@ -7,14 +7,28 @@ using System.ServiceModel;
 using Server.Entities;
 using Server.ServiceContracts;
 using Server.DataLayer;
+using System.Data.SqlClient;
+using System.IO;
 
 namespace Server
 {
     [ServiceBehavior(Namespace = "Server/")]
-    class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService
+    class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService,
+        ISocialNetworkAccountInfoSaverService, IMusicStreamGetterService
     {
         //private static DataSaverService _saverService;
-        private IDAL _dataLayer = new DALStub();
+        private IDAL _dataLayer = new MsSqlDAL();
+        private static List<string> _sounds = new List<string>();
+
+        static DataSaverService()
+        {
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Deep Purple - Highway Star.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Deep Purple - Burn.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Deep Purple - Anya.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Blue Oyster Cult – Dancin' In The Ruins.mp3");
+            _sounds.Add(@"D:\Folder\Music\Leasure And In Net\Iron Maiden - Mother Russia.mp3");
+            _sounds.AddRange(Directory.GetFiles("../../Relax Sounds"));
+        }
 
         //private DataSaverService(IDAL dataLayer)
         //{
@@ -42,10 +56,19 @@ namespace Server
         //    return _saverService;
         //}
 
-        void IUserSaverService.RegisterUser(User user)
+        bool IUserSaverService.RegisterUser(User user)
         {
             Console.WriteLine("Register new user - {0}", user.Email);
-            _dataLayer.SaveUser(user);
+            try
+            {
+                _dataLayer.SaveUser(user);
+                return true;
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Such user already exists"); // logging
+                return false;
+            }
         }
 
         User IUserSaverService.GetUser(string email)
@@ -60,16 +83,16 @@ namespace Server
             _dataLayer.SaveNote(user, note);
         }
 
-        void INoteSaverService.RemoveNote(User user, Note note)
+        void INoteSaverService.RemoveNote(Note note)
         {
             Console.WriteLine("Remove existing note...");
-            _dataLayer.RemoveNote(user, note);
+            _dataLayer.RemoveNote(note);
         }
 
-        void INoteSaverService.EditNote(User user, Note note)
+        void INoteSaverService.EditNote(Note note)
         {
             Console.WriteLine("Edit existing note...");
-            _dataLayer.UpdateNote(user, note);
+            _dataLayer.UpdateNote(note);
         }
 
         void ITodoSaverService.SaveTodoItem(User user, TodoItem item)
@@ -78,10 +101,21 @@ namespace Server
             _dataLayer.SaveTodoItem(user, item);
         }
 
-        void ITodoSaverService.RemoveTodoItem(User user, TodoItem item)
+        void ITodoSaverService.RemoveTodoItem(TodoItem item)
         {
             Console.WriteLine("Remove existing todo item...");
-            _dataLayer.RemoveTodoItem(user, item);
+            _dataLayer.RemoveTodoItem(item);
+        }
+
+        void ISocialNetworkAccountInfoSaverService.UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
+        {
+            Console.WriteLine("Updating user account info...");
+        }
+
+        Stream IMusicStreamGetterService.GetMusicStream()
+        {
+            int song = (new Random()).Next(_sounds.Count);
+            return new FileStream(_sounds[song], FileMode.Open);
         }
     }
 }

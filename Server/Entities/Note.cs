@@ -11,7 +11,7 @@ namespace Server.Entities
     class Note
     {
         [DataMember]
-        public Guid ID { get; set; }
+        public Guid Id { get; set; }
         [DataMember]
         public string NoteText { get; set; }
     }

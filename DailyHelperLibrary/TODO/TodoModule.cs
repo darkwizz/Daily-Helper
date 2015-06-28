@@ -45,7 +45,7 @@ namespace DailyHelperLibrary.TODO
             user.TodoItems.Remove(item.Id);
             try
             {
-                _saverService.RemoveTodoItem(user, item);
+                _saverService.RemoveTodoItem(item);
                 return new EventResult(true);
             }
             catch (CommunicationException ex)

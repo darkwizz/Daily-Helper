@@ -10,7 +10,7 @@ namespace DailyHelperLibrary.Savers
     public interface INoteSaver
     {
         void SaveNote(User user, Note note);
-        void RemoveNote(User user, Note note);
-        void EditNote(User user, Note note);
+        void RemoveNote(Note note);
+        void EditNote(Note note);
     }
 }

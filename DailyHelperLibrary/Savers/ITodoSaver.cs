@@ -10,6 +10,6 @@ namespace DailyHelperLibrary.Savers
     public interface ITodoSaver
     {
         void SaveTodoItem(User user, TodoItem item);
-        void RemoveTodoItem(User user, TodoItem item);
+        void RemoveTodoItem(TodoItem item);
     }
 }

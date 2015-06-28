@@ -119,23 +119,15 @@ namespace DailyHelperLibrary.Scheduler
             {
                 // by default; Client must provide, that user can't place task on scheduling without running days
                 DaysOfTheWeek dayOfWeek = DaysOfTheWeek.AllDays;
-                int i;
-                for (i = 0; i < DAYS_COUNT; i++)
-                {
-                    if (regItem.RunningDays[i])
-                    {
-                        dayOfWeek = _days[i];
-                        break;
-                    }
-                }
-                for (; i < DAYS_COUNT; i++)
+                for (int i = 0; i < DAYS_COUNT; i++)
                 {
                     if (regItem.RunningDays[i])
                     {
                         dayOfWeek = _days[i];
                     }
                 }
-                task.Triggers.Add(new MonthlyDOWTrigger { WeeksOfMonth = WhichWeek.AllWeeks, StartBoundary = regItem.TriggeringTime, DaysOfWeek = dayOfWeek });
+                task.Triggers.Add(new MonthlyDOWTrigger 
+                    { WeeksOfMonth = WhichWeek.AllWeeks, StartBoundary = regItem.TriggeringTime, DaysOfWeek = dayOfWeek });
             }
             _taskService.RootFolder.RegisterTaskDefinition(item.Id.ToString(), task);
         }

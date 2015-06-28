@@ -8,12 +8,10 @@ using Server.Entities;
 
 namespace Server.ServiceContracts
 {
-    [ServiceContract(Name = "IUserSaverService", Namespace = "Server/")]
-    interface IUserSaverService
+    [ServiceContract(Name = "ISocialNetworkAccountInfoSaverService", Namespace = "Server/")]
+    interface ISocialNetworkAccountInfoSaverService
     {
         [OperationContract]
-        bool RegisterUser(User user);
-        [OperationContract]
-        User GetUser(string email);
+        void UpdateAccountInfo(User user, SocialNetworkAccountInfo info);
     }
 }

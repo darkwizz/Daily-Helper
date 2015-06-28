@@ -8,12 +8,10 @@ using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.ServiceContracts
 {
-    [ServiceContract(Name = "ITodoSaverService", Namespace = "Server/")]
-    interface ITodoSaverService
+    [ServiceContract(Name = "ISocialNetworkAccountInfoSaverService", Namespace = "Server/")]
+    interface ISocialNetworkAccountInfoSaverService
     {
         [OperationContract]
-        void SaveTodoItem(ServiceUser user, ServiceTodoItem item);
-        [OperationContract]
-        void RemoveTodoItem(ServiceTodoItem item);
+        void UpdateAccountInfo(ServiceUser user, ServiceSocialNetworkAccountInfo info);
     }
 }
