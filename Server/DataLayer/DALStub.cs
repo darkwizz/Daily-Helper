@@ -9,7 +9,7 @@ namespace Server.DataLayer
 {
     class DALStub: IDAL
     {
-        public User GetUser(string email)
+        public User GetUser(string email, string machineName)
         {
             Console.WriteLine("Getting user with email " + email);
             User user = new User { Email = "fake@mail.com", Password = "fake_pwd" };
@@ -49,6 +49,16 @@ namespace Server.DataLayer
         public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
         {
             Console.WriteLine("Update user social network account info...");
+        }
+
+        public void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
+        {
+            Console.WriteLine("Saving schedule item {0} of user {1}...", item.ExecutablePath, user.Email);
+        }
+
+        public void RemoveScheduleItem(OnceRunningScheduleItem item)
+        {
+            Console.WriteLine("Removing schedule item {0}...", item.ExecutablePath);
         }
     }
 }

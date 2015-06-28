@@ -33,3 +33,33 @@ IsActive BIT NOT NULL);
 
 INSERT INTO tbAccount(Id, Account)
 VALUES (NEWID(), 'VK'), (NEWID(), 'Twitter'), (NEWID(), 'Facebook');
+
+CREATE TABLE tbDay(
+Id INT PRIMARY KEY,
+DayWeek NVARCHAR(10));
+
+INSERT INTO tbDay(Id, DayWeek) VALUES
+	(0, 'Monday'),
+	(1, 'Tuesday'),
+	(2, 'Wednesday'),
+	(3, 'Thursday'),
+	(4, 'Friday'),
+	(5, 'Saturday'),
+	(6, 'Sunday');
+
+CREATE TABLE tbScheduleItem(
+Id UNIQUEIDENTIFIER PRIMARY KEY,
+ExecutablePath VARCHAR(256) NOT NULL,
+TriggeringTime DATETIME2 NOT NULL,
+TriggeringMessage NVARCHAR(60),
+MachineName NVARCHAR(120) NOT NULL,
+IsRegular BIT NOT NULL,
+IdUser UNIQUEIDENTIFIER NOT NULL,
+FOREIGN KEY(IdUser) REFERENCES tbUser(Id));
+
+CREATE TABLE tbSchedulingDay(
+Id UNIQUEIDENTIFIER PRIMARY KEY,
+IdScheduleItem UNIQUEIDENTIFIER,
+IdDay INT,
+FOREIGN KEY(IdScheduleItem) REFERENCES tbScheduleItem(Id),
+FOREIGN KEY(IdDay) REFERENCES tbDay(Id));

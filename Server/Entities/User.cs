@@ -22,6 +22,8 @@ namespace Server.Entities
         public Dictionary<Guid, TodoItem> TodoItems { get; set; }
         [DataMember]
         public Dictionary<Guid, SocialNetworkAccountInfo> Accounts { get; set; }
+        [DataMember]
+        public Dictionary<Guid, OnceRunningScheduleItem> ScheduleItems { get; set; }
 
         public User()
         {

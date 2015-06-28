@@ -6,6 +6,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 using DailyHelperLibrary.Entities;
+using DailyHelperLibrary.ServiceEntities;
 using Microsoft.Win32.TaskScheduler;
 
 namespace DailyHelperLibrary.Scheduler
@@ -14,18 +15,12 @@ namespace DailyHelperLibrary.Scheduler
     {
         private const int DAYS_COUNT = 7;
         private const string CONFIG_DIRECTORY = "ScheduleConfigs";
-        private static DataContractSerializer _serializer;
         private static DaysOfTheWeek[] _days;
         private TaskService _taskService;
 
         public WindowsScheduler()
         {
             _taskService = new TaskService();
-            if (_serializer == null)
-            {
-                _serializer = new DataContractSerializer(typeof(Dictionary<Guid, InnerOnceRunningScheduleItem>), 
-                    new Type[] { typeof(InnerRegularlyRunningScheduleItem) });
-            }
             if (_days == null)
             {
                 //int i = 0;
@@ -44,25 +39,6 @@ namespace DailyHelperLibrary.Scheduler
             }
         }
 
-        public void SaveUserConfig(User user)
-        {
-            string userDirectory = user.Email.Substring(0, user.Email.LastIndexOf('@')) + "Settings";
-            if (!Directory.Exists(CONFIG_DIRECTORY + "/" + userDirectory))
-            {
-                Directory.CreateDirectory(CONFIG_DIRECTORY + "/" + userDirectory);
-            }
-            string configFile = CONFIG_DIRECTORY + "/" + userDirectory + "/Scheduler.xml";
-            Dictionary<Guid, InnerOnceRunningScheduleItem> scheduleItems = new Dictionary<Guid, InnerOnceRunningScheduleItem>();
-            foreach (var item in user.ScheduleItems.Values)
-            {
-                scheduleItems.Add(item.Id, item.InnerScheduleItem);
-            }
-            using (XmlWriter writer = XmlWriter.Create(configFile))
-            {
-                _serializer.WriteObject(writer, scheduleItems);
-            }
-        }
-
         static WindowsScheduler()
         {
             if (!Directory.Exists(CONFIG_DIRECTORY))
@@ -71,39 +47,10 @@ namespace DailyHelperLibrary.Scheduler
             }
         }
 
-        public Dictionary<Guid, OnceRunningScheduleItem> LoadUserConfig(string login)
-        {
-            string userDirectory = login.Substring(0, login.LastIndexOf('@')) + "Settings";
-            Dictionary<Guid, OnceRunningScheduleItem> scheduleItems = new Dictionary<Guid,OnceRunningScheduleItem>();
-            if (!Directory.Exists(CONFIG_DIRECTORY + "/" + userDirectory))
-            {
-                return scheduleItems;
-            }
-            string configFile = CONFIG_DIRECTORY + "/" + userDirectory + "/Scheduler.xml";
-            if (!File.Exists(configFile))
-            {
-                return scheduleItems;
-            }
-            using (XmlReader reader = XmlReader.Create(configFile))
-            {
-                Dictionary<Guid, InnerOnceRunningScheduleItem> items = 
-                    (Dictionary<Guid, InnerOnceRunningScheduleItem>)_serializer.ReadObject(reader);
-                foreach (var item in items.Values)
-                {
-                    if (item.TriggeringTime <= DateTime.Now)
-                    {
-                        continue;
-                    }
-                    scheduleItems.Add(item.Id, item.ScheduleItem);
-                }
-            }
-            return scheduleItems;
-        }
-
         public void PlaceOnScheduling(OnceRunningScheduleItem item)
         {
             TaskDefinition task = _taskService.NewTask();
-            if (item.Message != null)
+            if (item.Message != null && item.Message != String.Empty)
             {
                 task.Actions.Add(new ShowMessageAction(item.Message, "SURPRISE"));
             }
@@ -123,7 +70,11 @@ namespace DailyHelperLibrary.Scheduler
                 {
                     if (regItem.RunningDays[i])
                     {
-                        dayOfWeek = _days[i];
+                        // If there is the first marked day then dayOfWeek = _days[i]
+                        // else add one more day
+                        dayOfWeek = dayOfWeek == DaysOfTheWeek.AllDays ?
+                            _days[i] :
+                            dayOfWeek | _days[i];
                     }
                 }
                 task.Triggers.Add(new MonthlyDOWTrigger 

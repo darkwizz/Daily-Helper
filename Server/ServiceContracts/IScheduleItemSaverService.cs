@@ -8,12 +8,12 @@ using Server.Entities;
 
 namespace Server.ServiceContracts
 {
-    [ServiceContract(Name = "IUserSaverService", Namespace = "Server/")]
-    interface IUserSaverService
+    [ServiceContract(Name = "IScheduleItemSaverService", Namespace = "Server/")]
+    interface IScheduleItemSaverService
     {
         [OperationContract]
-        bool RegisterUser(User user);
+        void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName);
         [OperationContract]
-        User GetUser(string email, string machineName);
+        void DeleteScheduleItem(OnceRunningScheduleItem item);
     }
 }

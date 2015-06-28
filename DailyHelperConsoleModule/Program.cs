@@ -32,10 +32,11 @@ namespace DailyHelperConsoleModule
 
             UserSaver userProxy = new UserSaver();
             IScheduler scheduler = new WindowsScheduler();
+            ScheduleItemSaver scheduleProxy = new ScheduleItemSaver();
             RegistrationModule regModule = new RegistrationModule(userProxy);
-            AuthorisationModule authModule = new AuthorisationModule(userProxy, scheduler);
+            AuthorisationModule authModule = new AuthorisationModule(userProxy, scheduleProxy, scheduler);
 
-            SchedulerModule schedulerModule = new SchedulerModule(scheduler);
+            SchedulerModule schedulerModule = new SchedulerModule(scheduler, scheduleProxy);
 
             TodoSaver todoProxy = new TodoSaver();
             TodoModule todoModule = new TodoModule(todoProxy);

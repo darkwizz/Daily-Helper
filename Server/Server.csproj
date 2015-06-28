@@ -48,11 +48,14 @@
     <Compile Include="DataLayer\MsSqlDAL.cs" />
     <Compile Include="DataSaverService.cs" />
     <Compile Include="Entities\Note.cs" />
+    <Compile Include="Entities\OnceRunningScheduleItem.cs" />
+    <Compile Include="Entities\RegularlyRunningScheduleItem.cs" />
     <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\TodoItem.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="ServiceContracts\IMusicStreamGetterService.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
+    <Compile Include="ServiceContracts\IScheduleItemSaverService.cs" />
     <Compile Include="ServiceContracts\ISocialNetworkAccountInfoSaverService.cs" />
     <Compile Include="ServiceContracts\ITodoSaverService.cs" />
     <Compile Include="ServiceContracts\IUserSaverService.cs" />

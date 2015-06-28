@@ -14,7 +14,8 @@ namespace Server
 {
     [ServiceBehavior(Namespace = "Server/")]
     class DataSaverService: IUserSaverService, INoteSaverService, ITodoSaverService,
-        ISocialNetworkAccountInfoSaverService, IMusicStreamGetterService
+        ISocialNetworkAccountInfoSaverService, IMusicStreamGetterService,
+        IScheduleItemSaverService
     {
         //private static DataSaverService _saverService;
         private IDAL _dataLayer = new MsSqlDAL();
@@ -71,9 +72,9 @@ namespace Server
             }
         }
 
-        User IUserSaverService.GetUser(string email)
+        User IUserSaverService.GetUser(string email, string machineName)
         {
-            User user = _dataLayer.GetUser(email);
+            User user = _dataLayer.GetUser(email, machineName);
             return user;
         }
 
@@ -110,6 +111,26 @@ namespace Server
         void ISocialNetworkAccountInfoSaverService.UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
         {
             Console.WriteLine("Updating user account info...");
+        }
+
+        void IScheduleItemSaverService.SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
+        {
+            try
+            {
+                Console.WriteLine("Save new schedule item...");
+                Console.WriteLine("Path: {0}\nTime: {1}\nMessage: {2}\nMachine name: {3}\n", item.ExecutablePath, item.TriggeringTime, item.Message, machineName);
+                _dataLayer.SaveScheduleItem(user, item, machineName);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Outer exception\n" + ex.Message);
+            }
+        }
+
+        void IScheduleItemSaverService.DeleteScheduleItem(OnceRunningScheduleItem item)
+        {
+            Console.WriteLine("Delete existing schedule item...");
+            _dataLayer.RemoveScheduleItem(item);
         }
 
         Stream IMusicStreamGetterService.GetMusicStream()

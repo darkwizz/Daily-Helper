@@ -14,14 +14,16 @@ namespace DailyHelperLibrary.Entry
 {
     public class AuthorisationModule
     {
-        private IUserSaver _saverService;
+        private IUserSaver _userSaverService;
+        private IScheduleItemSaver _scheduleItemSaverService;
         private IScheduler _scheduler;
         private IEmailSender _sender;
 
-        public AuthorisationModule(IUserSaver userSaver, IScheduler scheduler)
+        public AuthorisationModule(IUserSaver userSaver, IScheduleItemSaver scheduleItemSaver, IScheduler scheduler)
         {
             _scheduler = scheduler;
-            _saverService = userSaver;
+            _userSaverService = userSaver;
+            _scheduleItemSaverService = scheduleItemSaver;
             _sender = new EmailSender();
         }
 
@@ -33,7 +35,7 @@ namespace DailyHelperLibrary.Entry
             User user;
             try
             {
-                user = _saverService.GetUser(email);
+                user = _userSaverService.GetUser(email, Environment.MachineName);
             }
             catch (CommunicationException ex)
             {
@@ -54,10 +56,10 @@ namespace DailyHelperLibrary.Entry
             }
 
             // Load User's scheduler config and place all schedule items on scheduling
-            foreach (OnceRunningScheduleItem item in _scheduler.LoadUserConfig(user.Email).Values)
+            // I don't know yet is MachineName unique. If it isn't then it'll need to find 
+            foreach (var item in user.ScheduleItems.Values)
             {
                 _scheduler.PlaceOnScheduling(item);
-                user.ScheduleItems.Add(item.Id, item);
             }
 
             EventResult result = new EventResult(true);
@@ -71,7 +73,7 @@ namespace DailyHelperLibrary.Entry
             User user;
             try
             {
-                user = _saverService.GetUser(email);
+                user = _userSaverService.GetUser(email, Environment.MachineName);
             }
             catch (CommunicationException ex)
             {
@@ -106,18 +108,14 @@ namespace DailyHelperLibrary.Entry
         public EventResult OnExited(ExitEventArgs e)
         {
             User user = e.User;
-            Guid[] keys = user.ScheduleItems.Keys.ToArray();
-            for (int i = 0; i < keys.Length; i++)
+            foreach (var item in user.ScheduleItems.Values)
             {
-                OnceRunningScheduleItem item = user.ScheduleItems[keys[i]];
+                _scheduler.RemoveFromScheduling(item);
                 if (item.TriggeringTime < DateTime.Now)
                 {
-                    user.ScheduleItems.Remove(item.Id);
-                    continue;
+                    _scheduleItemSaverService.DeleteScheduleItem(item);
                 }
-                _scheduler.RemoveFromScheduling(item);
             }
-            _scheduler.SaveUserConfig(user);
             return new EventResult(true);
         }
     }

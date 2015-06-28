@@ -11,7 +11,8 @@ namespace Server.DataLayer
 {
     class MsSqlDAL: IDAL
     {
-        private static string _connectionString = @"Your connection string";
+        private static string _connectionString = @"Data Source=ARTUR-PC\SQLSERVER; Database=dbDailyHelper; " +
+                                                    @"Integrated Security=SSPI"; // SSPI <=> true
         private static SqlConnection _connection = null;
         private static DataSet _database = null;
 
@@ -19,6 +20,7 @@ namespace Server.DataLayer
         private static SqlDataAdapter _todoAdapter = null;
         private static SqlDataAdapter _noteAdapter = null;
         private static SqlDataAdapter _socialNetAccountsAdapter = null;
+        private static SqlDataAdapter _scheduleItemAdapter = null;
 
         private static Dictionary<SocialNetworkAccounts, Guid> _accountsIds = null;
         private static Dictionary<Guid, SocialNetworkAccounts> _idsAccounts = null;
@@ -32,16 +34,19 @@ namespace Server.DataLayer
             _todoAdapter = new SqlDataAdapter(@"SELECT * FROM tbTodo", _connectionString);
             _noteAdapter = new SqlDataAdapter(@"SELECT * FROM tbNote", _connectionString);
             _socialNetAccountsAdapter = new SqlDataAdapter(@"SELECT * FROM tbAccountInfo", _connectionString);
+            _scheduleItemAdapter = new SqlDataAdapter(@"SELECT * FROM tbScheduleItem", _connectionString);
 
             SqlCommandBuilder _userCommandBuilder = new SqlCommandBuilder(_userAdapter);
             SqlCommandBuilder _todoCommandBuilder = new SqlCommandBuilder(_todoAdapter);
             SqlCommandBuilder _noteCommandBuilder = new SqlCommandBuilder(_noteAdapter);
             SqlCommandBuilder _socialNetCommandBuilder = new SqlCommandBuilder(_socialNetAccountsAdapter);
+            SqlCommandBuilder _scheduleItemCommandBuilder = new SqlCommandBuilder(_scheduleItemAdapter);
 
             _userAdapter.Fill(_database, "tbUser");
             _todoAdapter.Fill(_database, "tbTodo");
             _noteAdapter.Fill(_database, "tbNote");
             _socialNetAccountsAdapter.Fill(_database, "tbAccountInfo");
+            _scheduleItemAdapter.Fill(_database, "tbScheduleItem");
 
             FillAccountsMappings();
             FillDbRelations();
@@ -55,7 +60,9 @@ namespace Server.DataLayer
                                                                  _database.Tables["tbNote"].Columns["IdUser"]);
             DataRelation accountsInfoUser = new DataRelation("AccountInfoUser", _database.Tables["tbUser"].Columns["Id"],
                                                                                  _database.Tables["tbAccountInfo"].Columns["IdUser"]);
-            _database.Relations.AddRange(new DataRelation[] { todoUser, noteUser, accountsInfoUser });
+            DataRelation scheduleItemUser = new DataRelation("ScheduleItemUser", _database.Tables["tbUser"].Columns["Id"],
+                                                                                 _database.Tables["tbScheduleItem"].Columns["IdUser"]);
+            _database.Relations.AddRange(new DataRelation[] { todoUser, noteUser, accountsInfoUser, scheduleItemUser });
         }
 
         private static void FillAccountsMappings()
@@ -77,10 +84,10 @@ namespace Server.DataLayer
 
         // TODO
         // add reading of all collections - Notes, TODO items and Social Network Accounts info
-        public User GetUser(string email)
+        public User GetUser(string email, string machineName)
         {
             User user = new User();
-            DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Email='{0}'", email));
+            DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Email = '{0}'", email));
             if (rows == null || rows.Length == 0)
             {
                 return null;
@@ -94,6 +101,7 @@ namespace Server.DataLayer
             user.Notes = new Dictionary<Guid, Note>();
             user.TodoItems = new Dictionary<Guid, TodoItem>();
             user.Accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
+            user.ScheduleItems = new Dictionary<Guid, OnceRunningScheduleItem>();
 
             foreach (DataRow row in rows[0].GetChildRows("NoteUser"))
             {
@@ -122,7 +130,64 @@ namespace Server.DataLayer
                 user.Accounts.Add(info.Id, info);
             }
 
+            foreach (DataRow row in rows[0].GetChildRows("ScheduleItemUser"))
+            {
+                string scheduleItemMachineName = (string)row["MachineName"];
+                if (!machineName.Equals(scheduleItemMachineName))
+                {
+                    continue;
+                }
+
+                OnceRunningScheduleItem item;
+                Guid scheduleItemId = (Guid)row["Id"];
+                string executablePath = (string)row["ExecutablePath"];
+                DateTime triggeringTime = (DateTime)row["TriggeringTime"];
+                string message = (string)row["TriggeringMessage"];
+                bool isRegular = (bool)row["IsRegular"];
+
+                if (!isRegular)
+                {
+                    item = new OnceRunningScheduleItem();
+                }
+                else
+                {
+                    item = GetRegularlyScheduleItem(scheduleItemId);
+                }
+                item.Id = scheduleItemId;
+                item.ExecutablePath = executablePath;
+                item.TriggeringTime = triggeringTime;
+                item.Message = message;
+
+                user.ScheduleItems.Add(item.Id, item);
+            }
+
             return user;
+        }
+
+        private RegularlyRunningScheduleItem GetRegularlyScheduleItem(Guid id)
+        {
+            RegularlyRunningScheduleItem item = new RegularlyRunningScheduleItem();
+            try
+            {
+                _connection.Open();
+                SqlCommand command = _connection.CreateCommand();
+                command.CommandText = @"SELECT DayNumber FROM tbSchedulingDay WHERE ScheduleItemId = @Id";
+                SqlParameter idParameter = new SqlParameter("@Id", id);
+                command.Parameters.Add(idParameter);
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int dayNumber = (int)reader["DayNumber"];
+                        item.RunningDays[dayNumber] = true;
+                    }
+                }
+            }
+            finally
+            {
+                _connection.Close();
+            }
+            return item;
         }
 
         /// <summary>
@@ -211,6 +276,98 @@ namespace Server.DataLayer
             }
 
             _socialNetAccountsAdapter.Update(_database.Tables["tbAccountInfo"]); //_database, "tbAccountInfo"
+        }
+
+        public void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
+        {
+            DataRow row = _database.Tables["tbScheduleItem"].NewRow();
+            row["Id"] = item.Id;
+            Console.WriteLine(item.ExecutablePath);
+            row["ExecutablePath"] = item.ExecutablePath;
+            row["TriggeringTime"] = item.TriggeringTime;
+            row["TriggeringMessage"] = item.Message;
+            row["IdUser"] = user.Id;
+            row["MachineName"] = machineName;
+            row["IsRegular"] = item is RegularlyRunningScheduleItem ? true : false;
+            _database.Tables["tbScheduleItem"].Rows.Add(row);
+            try
+            {
+                _scheduleItemAdapter.Update(_database.Tables["tbScheduleItem"]);
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine("Some DB error: " + ex);
+            }
+
+            if (item is RegularlyRunningScheduleItem)
+            {
+                InsertRegularItem(item as RegularlyRunningScheduleItem);
+            }
+        }
+
+        private void InsertRegularItem(RegularlyRunningScheduleItem item)
+        {
+            try
+            {
+                _connection.Open();
+                SqlCommand command = _connection.CreateCommand();
+                for (int i = 0; i < item.RunningDays.Length; i++)
+                {
+                    if (item.RunningDays[i])
+                    {
+                        command.CommandText = @"INSERT INTO tbSchedulingDay(Id, IdScheduleItem, DayId)
+                                                VALUES(@Id, @ScheduleItemId, @DayId)";
+                        SqlParameter id = new SqlParameter("@Id", Guid.NewGuid());
+                        SqlParameter scheduleItemId = new SqlParameter("@ScheduleItemId", item.Id);
+                        SqlParameter dayId = new SqlParameter("@DayId", i);
+
+                        command.Parameters.Add(id);
+                        command.Parameters.Add(scheduleItemId);
+                        command.Parameters.Add(dayId);
+                        
+                        command.ExecuteNonQuery();
+                    }
+                }
+            }
+            finally
+            {
+                if (_connection.State != ConnectionState.Closed)
+                {
+                    _connection.Close();
+                }
+            }
+        }
+
+        public void RemoveScheduleItem(OnceRunningScheduleItem item)
+        {
+            if (item is RegularlyRunningScheduleItem)
+            {
+                DeleteRegularScheduleItem(item as RegularlyRunningScheduleItem);
+            }
+            DataRow[] rows = _database.Tables["tbScheduleItem"].Select("Id = '" + item.Id + "'");
+            DataRow deletedRow = rows[0];
+            deletedRow.Delete();
+            _scheduleItemAdapter.Update(_database.Tables["tbScheduleItem"]);
+        }
+
+        private void DeleteRegularScheduleItem(RegularlyRunningScheduleItem item)
+        {
+            try
+            {
+                _connection.Open();
+                SqlCommand command = _connection.CreateCommand();
+                command.CommandText = @"DELETE FROM tbSchedulingDay WHERE IdScheduleItem = @Id";
+                SqlParameter id = new SqlParameter("@Id", item.Id);
+                command.Parameters.Add(id);
+                command.ExecuteNonQuery();
+            }
+            finally
+            {
+                if (_connection.State != ConnectionState.Closed)
+                {
+                    _connection.Close();
+                }
+            }
         }
     }
 }

@@ -7,9 +7,9 @@ using DailyHelperLibrary.Entities;
 
 namespace DailyHelperLibrary.Savers
 {
-    public interface IUserSaver
+    public interface IScheduleItemSaver
     {
-        bool RegisterUser(User user);
-        User GetUser(string email, string machineName);
+        void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName);
+        void DeleteScheduleItem(OnceRunningScheduleItem item);
     }
 }

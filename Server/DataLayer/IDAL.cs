@@ -10,7 +10,7 @@ namespace Server.DataLayer
     interface IDAL
     {
         // User
-        User GetUser(string email);
+        User GetUser(string email, string machineName);
         /// <summary>
         /// Save new user into database. If such user already exists, then throw new <code>Exception</code>
         /// </summary>
@@ -25,5 +25,8 @@ namespace Server.DataLayer
         void RemoveTodoItem(TodoItem item);
         // Social Networks
         void SaveAccountInfo(User user, SocialNetworkAccountInfo info);
+        // Scheduler
+        void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName);
+        void RemoveScheduleItem(OnceRunningScheduleItem item);
     }
 }

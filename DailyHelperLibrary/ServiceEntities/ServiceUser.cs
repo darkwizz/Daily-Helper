@@ -31,6 +31,8 @@ namespace DailyHelperLibrary.ServiceEntities
         public Dictionary<Guid, ServiceTodoItem> TodoItems { get; set; }
         [DataMember]
         public Dictionary<ServiceSocialNetworkAccounts, ServiceSocialNetworkAccountInfo> Accounts { get; set; }
+        [DataMember]
+        public Dictionary<Guid, ServiceOnceRunningScheduleItem> ScheduleItems { get; set; }
 
         public ServiceUser()
         { }

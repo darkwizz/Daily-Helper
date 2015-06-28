@@ -4,26 +4,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DailyHelperLibrary.Entities;
+using DailyHelperLibrary.Savers;
 
 namespace DailyHelperLibrary.Scheduler
 {
     public class SchedulerModule
     {
         private IScheduler _scheduler;
+        private IScheduleItemSaver _saver;
 
-        public SchedulerModule(IScheduler scheduler)
+        public SchedulerModule(IScheduler scheduler, IScheduleItemSaver saver)
         {
             _scheduler = scheduler;
+            _saver = saver;
         }
 
         public EventResult OnOnceRunningSelected(SchedulerModuleEventArgs<OnceRunningScheduleItem> e)
         {
+            _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
             PlaceOnScheduling(e.User, e.ScheduleItem);
             return new EventResult(true);
         }
 
         public EventResult OnRegularlyRunningSelected(SchedulerModuleEventArgs<RegularlyRunningScheduleItem> e)
         {
+            _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
             PlaceOnScheduling(e.User, e.ScheduleItem);
             return new EventResult(true);
         }
@@ -46,12 +51,13 @@ namespace DailyHelperLibrary.Scheduler
             User user = e.User;
 
             bool success = _scheduler.RemoveFromScheduling(item);
-            user.ScheduleItems.Remove(item.Id);
             if (!success)
             {
                 return new EventResult(false, "No such task on scheduling. Please, place it on scheduler");
             }
 
+            _saver.DeleteScheduleItem(item);
+            user.ScheduleItems.Remove(item.Id);
             return new EventResult(true);
         }
     }

@@ -8,12 +8,12 @@ using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.ServiceContracts
 {
-    [ServiceContract(Name = "IUserSaverService", Namespace = "Server/")]
-    interface IUserSaverService
+    [ServiceContract(Name = "IScheduleItemSaverService", Namespace = "Server/")]
+    interface IScheduleItemSaverService
     {
         [OperationContract]
-        bool RegisterUser(ServiceUser user);
+        void SaveScheduleItem(ServiceUser user, ServiceOnceRunningScheduleItem item, string machineName);
         [OperationContract]
-        ServiceUser GetUser(string email, string machineName);
+        void DeleteScheduleItem(ServiceOnceRunningScheduleItem item);
     }
 }

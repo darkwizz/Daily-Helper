@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using DailyHelperLibrary.Entities;
 
-namespace DailyHelperLibrary.Scheduler
+namespace DailyHelperLibrary.ServiceEntities
 {
-    [DataContract]
-    class InnerRegularlyRunningScheduleItem: InnerOnceRunningScheduleItem
+    [DataContract(Name = "RegularlyRunningScheduleItem", Namespace = "Server/")]
+    class ServiceRegularlyRunningScheduleItem: ServiceOnceRunningScheduleItem
     {
         [DataMember]
         public bool[] RunningDays { get; set; }

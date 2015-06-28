@@ -67,6 +67,7 @@
     <Compile Include="Entry\RegistrationModule.cs" />
     <Compile Include="Proxies\MusicStreamGetter.cs" />
     <Compile Include="Proxies\NoteSaver.cs" />
+    <Compile Include="Proxies\ScheduleItemSaver.cs" />
     <Compile Include="Proxies\SocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Proxies\TodoSaver.cs" />
     <Compile Include="Proxies\UserSaver.cs" />
@@ -77,11 +78,13 @@
     <Compile Include="Relax\RelaxModule.cs" />
     <Compile Include="Relax\StreamingMusicPlayer.cs" />
     <Compile Include="Savers\INoteSaver.cs" />
+    <Compile Include="Savers\IScheduleItemSaver.cs" />
     <Compile Include="Savers\ISocialNetworkAccountInfoSaver.cs" />
     <Compile Include="Savers\ITodoSaver.cs" />
     <Compile Include="Savers\IUserSaver.cs" />
-    <Compile Include="Scheduler\InnerOnceRunningScheduleItem.cs" />
-    <Compile Include="Scheduler\InnerRegularlyRunningScheduleItem.cs" />
+    <Compile Include="ServiceContracts\IScheduleItemSaverService.cs" />
+    <Compile Include="ServiceEntities\ServiceOnceRunningScheduleItem.cs" />
+    <Compile Include="ServiceEntities\ServiceRegularlyRunningScheduleItem.cs" />
     <Compile Include="Scheduler\IScheduler.cs" />
     <Compile Include="Scheduler\SchedulerModule.cs" />
     <Compile Include="Scheduler\SchedulerModuleEventArgs.cs" />

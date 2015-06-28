@@ -6,10 +6,10 @@ using System.Text;
 using System.Threading.Tasks;
 using DailyHelperLibrary.Entities;
 
-namespace DailyHelperLibrary.Scheduler
+namespace DailyHelperLibrary.ServiceEntities
 {
-    [DataContract]
-    class InnerOnceRunningScheduleItem
+    [DataContract(Name = "OnceRunningScheduleItem", Namespace = "Server/")]
+    class ServiceOnceRunningScheduleItem
     {
         [DataMember]
         public Guid Id { get; set; }
