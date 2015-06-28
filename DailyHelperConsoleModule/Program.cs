@@ -72,6 +72,7 @@ namespace DailyHelperConsoleModule
             userProxy.Dispose();
             todoProxy.Dispose();
             scheduler.Dispose();
+            scheduleProxy.Dispose();
             Thread.Sleep(4000);
         }
 

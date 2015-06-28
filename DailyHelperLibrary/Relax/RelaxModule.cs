@@ -35,7 +35,8 @@ namespace DailyHelperLibrary.Relax
                 // because sample recording thread can't catch to close main loop
                 // before _musicPlayer creates new stream
                 // now it is used for syncronization purposes
-                Thread.Sleep(750);
+                
+                // Thread.Sleep(750);
             }
             return OnRelaxChosen();
         }

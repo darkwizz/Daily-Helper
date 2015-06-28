@@ -11,7 +11,7 @@ using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.Proxies
 {
-    public class ScheduleItemSaver : IScheduleItemSaver
+    public class ScheduleItemSaver : IScheduleItemSaver, IDisposable
     {
         private ScheduleItemSaverProxy _proxy = new ScheduleItemSaverProxy();
 
@@ -41,6 +41,11 @@ namespace DailyHelperLibrary.Proxies
             {
                 Channel.DeleteScheduleItem(item.ServiceScheduleItem);
             }
+        }
+
+        public void Dispose()
+        {
+            _proxy.Close();
         }
     }
 }

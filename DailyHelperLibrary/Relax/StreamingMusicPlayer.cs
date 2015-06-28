@@ -27,7 +27,7 @@ namespace DailyHelperLibrary.Relax
         private System.Threading.Timer _timer = null;
         private byte[] _buffer = new byte[1024 * 64];
         private ManualResetEvent _manualEvent = new ManualResetEvent(true);
-        private bool _isInitted = false;
+        private bool _isPlayerInitted = false;
 
         public StreamingPlaybackState PlaybackState
         {
@@ -39,11 +39,14 @@ namespace DailyHelperLibrary.Relax
         
         public void Pause()
         {
-            if (_currentStream != null && _currentStream.CanRead)
+            _manualEvent.WaitOne();
+            _manualEvent.Reset();
+            if (_playbackState == StreamingPlaybackState.Playing && _currentStream != null && _currentStream.CanRead)
             {
                 _playbackState = StreamingPlaybackState.Buffering;
                 _waveOut.Pause();
             }
+            _manualEvent.Set();
         }
 
         public void Stop()
@@ -64,32 +67,43 @@ namespace DailyHelperLibrary.Relax
                     _bufferedWaveProvider.ClearBuffer();
                     _bufferedWaveProvider = null;
 
+                    // Console.WriteLine("Stop() waits...");
                     _manualEvent.WaitOne();
                     _manualEvent.Reset();
+                    // Console.WriteLine("Stop() resets...");
+
                     _currentStream.Close();
+                    _currentStream = null;
+
                     _manualEvent.Set();
+                    // Console.WriteLine("Stop() frees...");
                 }
             }
         }
 
-        // Вся беда с потоками - нужно как-то предусмотреть
         public void Play(Stream stream)
         {
+            if (_playbackState == StreamingPlaybackState.Playing)
+            {
+                Console.WriteLine("Song is already played");
+                return;
+            }
             if (stream == null)
             {
                 Console.WriteLine("No input stream");
                 return;
             }
-            _playbackState = StreamingPlaybackState.Buffering;
 
             _manualEvent.WaitOne();
             _manualEvent.Reset();
-            _currentStream = stream;
-            _manualEvent.Set();
+            _playbackState = StreamingPlaybackState.Buffering;
 
-            ThreadPool.QueueUserWorkItem((state) => AddSamples(_currentStream), null);
+            _currentStream = stream;
+
+            ThreadPool.QueueUserWorkItem((state) => AddSamples(stream), null);
             _timer = new System.Threading.Timer((state) => PlaybackCallback(), null, TimeSpan.FromMilliseconds(0),
                 TimeSpan.FromMilliseconds(250));
+            _manualEvent.Set();
         }
 
         private void AddSamples(Stream stream)
@@ -97,6 +111,10 @@ namespace DailyHelperLibrary.Relax
             IMp3FrameDecompressor decompressor = null;
             try
             {
+                // Console.WriteLine("AddSamples(stream) waits...");
+                _manualEvent.WaitOne();
+                _manualEvent.Reset();
+                // Console.WriteLine("AddSamples(stream) resets...");
                 var readFullyStream = new ReadFullyStream(stream);
                 do
                 {
@@ -110,16 +128,7 @@ namespace DailyHelperLibrary.Relax
                         Mp3Frame frame;
                         try
                         {
-                            _manualEvent.WaitOne();
-                            _manualEvent.Reset();
-                            //if (!_currentStream.CanRead)
-                            //{
-                            //    Console.WriteLine("Can't read");
-                            //    _manualEvent.Set();
-                            //    break;
-                            //}
                             frame = Mp3Frame.LoadFromStream(readFullyStream);
-                            _manualEvent.Set();
 
                             if (frame == null)
                             {
@@ -130,7 +139,6 @@ namespace DailyHelperLibrary.Relax
                         }
                         catch (EndOfStreamException ex)
                         {
-                            _manualEvent.Set();
                             _fullyDownloaded = true;
                             Console.WriteLine("End of stream " + ex);
                             // reached the end of the MP3 file / stream
@@ -152,6 +160,8 @@ namespace DailyHelperLibrary.Relax
                     }
 
                 } while (_playbackState != StreamingPlaybackState.Stopped);
+                _manualEvent.Set();
+                // Console.WriteLine("AddSamples(stream) frees...");
                 //Debug.WriteLine("Exiting");
                 // was doing this in a finally block, but for some reason
                 // we are hanging on response stream .Dispose so never get there
@@ -190,9 +200,9 @@ namespace DailyHelperLibrary.Relax
                 {
                     //Console.WriteLine("Creating WaveOut Device");
                     _waveOut = new WaveOutEvent();
-                    _isInitted = false;
+                    _isPlayerInitted = false;
                     _waveOut.Init(_bufferedWaveProvider);
-                    _isInitted = true;
+                    _isPlayerInitted = true;
                     //Console.WriteLine("After INIT");
                 }
                 else if (_bufferedWaveProvider != null)
@@ -218,7 +228,7 @@ namespace DailyHelperLibrary.Relax
 
         private void Play()
         {
-            if (!_isInitted)
+            if (!_isPlayerInitted)
             {
                 return;
             }
