@@ -14,7 +14,6 @@ namespace DailyHelperLibrary.Scheduler
     public class WindowsScheduler: IScheduler
     {
         private const int DAYS_COUNT = 7;
-        private const string CONFIG_DIRECTORY = "ScheduleConfigs";
         private static DaysOfTheWeek[] _days;
         private TaskService _taskService;
 
@@ -36,14 +35,6 @@ namespace DailyHelperLibrary.Scheduler
                 //{
                 //    _days[i++] = (DaysOfTheWeek)day;
                 //}
-            }
-        }
-
-        static WindowsScheduler()
-        {
-            if (!Directory.Exists(CONFIG_DIRECTORY))
-            {
-                Directory.CreateDirectory(CONFIG_DIRECTORY);
             }
         }
 
@@ -77,8 +68,8 @@ namespace DailyHelperLibrary.Scheduler
                             dayOfWeek | _days[i];
                     }
                 }
-                task.Triggers.Add(new MonthlyDOWTrigger 
-                    { WeeksOfMonth = WhichWeek.AllWeeks, StartBoundary = regItem.TriggeringTime, DaysOfWeek = dayOfWeek });
+                task.Triggers.Add(new WeeklyTrigger 
+                    { StartBoundary = regItem.TriggeringTime, DaysOfWeek = dayOfWeek });
             }
             _taskService.RootFolder.RegisterTaskDefinition(item.Id.ToString(), task);
         }

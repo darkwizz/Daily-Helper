@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -100,13 +101,13 @@ namespace DailyHelperLibrary.Relax
 
             _currentStream = stream;
 
-            ThreadPool.QueueUserWorkItem((state) => AddSamples(stream), null);
+            ThreadPool.QueueUserWorkItem((state) => AddSamples(), null);
             _timer = new System.Threading.Timer((state) => PlaybackCallback(), null, TimeSpan.FromMilliseconds(0),
                 TimeSpan.FromMilliseconds(250));
             _manualEvent.Set();
         }
 
-        private void AddSamples(Stream stream)
+        private void AddSamples()
         {
             IMp3FrameDecompressor decompressor = null;
             try
@@ -115,7 +116,7 @@ namespace DailyHelperLibrary.Relax
                 _manualEvent.WaitOne();
                 _manualEvent.Reset();
                 // Console.WriteLine("AddSamples(stream) resets...");
-                var readFullyStream = new ReadFullyStream(stream);
+                var readFullyStream = new ReadFullyStream(_currentStream);
                 do
                 {
                     if (IsBufferNearlyFull)
@@ -165,6 +166,20 @@ namespace DailyHelperLibrary.Relax
                 //Debug.WriteLine("Exiting");
                 // was doing this in a finally block, but for some reason
                 // we are hanging on response stream .Dispose so never get there
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine("Unavailable stream"); // logging
+                if (ex.InnerException is CommunicationException)
+                {
+                    ErrorNotifier.NotifyUser("Connection with server failed. Check your internet connection. " +
+                            "Otherwise, wait, please, while server is being repaired");
+                }
+                else
+                {
+                    ErrorNotifier.NotifyUser("Unavailable stream. Error message: " + ex.Message);
+                }
+                Stop();
             }
             finally
             {

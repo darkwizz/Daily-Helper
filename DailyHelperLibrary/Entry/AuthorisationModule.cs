@@ -35,6 +35,8 @@ namespace DailyHelperLibrary.Entry
             User user;
             try
             {
+                // Load User and especialy User's scheduler config and place all schedule items on scheduling
+                // I don't know yet is MachineName unique. If it isn't then it'll need to find
                 user = _userSaverService.GetUser(email, Environment.MachineName);
             }
             catch (CommunicationException ex)
@@ -55,8 +57,6 @@ namespace DailyHelperLibrary.Entry
                 return new EventResult(false, "Incorrect login or password");
             }
 
-            // Load User's scheduler config and place all schedule items on scheduling
-            // I don't know yet is MachineName unique. If it isn't then it'll need to find 
             foreach (var item in user.ScheduleItems.Values)
             {
                 _scheduler.PlaceOnScheduling(item);
