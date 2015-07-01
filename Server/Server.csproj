@@ -53,6 +53,8 @@
     <Compile Include="Entities\SocialNetworkAccountInfo.cs" />
     <Compile Include="Entities\TodoItem.cs" />
     <Compile Include="Entities\User.cs" />
+    <Compile Include="Faults\DataAlreadyExistsFault.cs" />
+    <Compile Include="Faults\DatabaseConnectionFault.cs" />
     <Compile Include="ServiceContracts\IMusicStreamGetterService.cs" />
     <Compile Include="ServiceContracts\INoteSaverService.cs" />
     <Compile Include="ServiceContracts\IScheduleItemSaverService.cs" />

@@ -57,19 +57,10 @@ namespace Server
         //    return _saverService;
         //}
 
-        bool IUserSaverService.RegisterUser(User user)
+        void IUserSaverService.RegisterUser(User user)
         {
             Console.WriteLine("Register new user - {0}", user.Email);
-            try
-            {
-                _dataLayer.SaveUser(user);
-                return true;
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine("Such user already exists"); // logging
-                return false;
-            }
+            _dataLayer.SaveUser(user);
         }
 
         User IUserSaverService.GetUser(string email, string machineName)
@@ -135,8 +126,21 @@ namespace Server
 
         Stream IMusicStreamGetterService.GetMusicStream()
         {
-            int song = (new Random()).Next(_sounds.Count);
-            return new FileStream(_sounds[song], FileMode.Open);
+            while (true)
+            {
+                try
+                {
+                    int song = (new Random()).Next(_sounds.Count);
+                    Console.WriteLine("Open song {0}", _sounds[song]);
+                    Stream stream = new FileStream(_sounds[song], FileMode.Open);
+                    return stream;
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    continue;
+                }
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Entities;
+using Server.Faults;
 
 namespace Server.ServiceContracts
 {
@@ -12,8 +13,10 @@ namespace Server.ServiceContracts
     interface IScheduleItemSaverService
     {
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName);
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void DeleteScheduleItem(OnceRunningScheduleItem item);
     }
 }

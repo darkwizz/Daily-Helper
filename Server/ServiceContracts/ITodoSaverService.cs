@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Entities;
+using Server.Faults;
 
 namespace Server.ServiceContracts
 {
@@ -12,8 +13,10 @@ namespace Server.ServiceContracts
     interface ITodoSaverService
     {
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void SaveTodoItem(User user, TodoItem item);
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void RemoveTodoItem(TodoItem item);
     }
 }

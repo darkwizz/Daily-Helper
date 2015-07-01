@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Entities;
+using Server.Faults;
 
 namespace Server.ServiceContracts
 {
@@ -12,6 +13,7 @@ namespace Server.ServiceContracts
     interface ISocialNetworkAccountInfoSaverService
     {
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void UpdateAccountInfo(User user, SocialNetworkAccountInfo info);
     }
 }

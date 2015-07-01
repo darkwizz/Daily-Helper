@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Entities;
+using Server.Faults;
 
 namespace Server.ServiceContracts
 {
@@ -12,10 +13,13 @@ namespace Server.ServiceContracts
     interface INoteSaverService
     {
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void SaveNote(User user, Note note);
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void RemoveNote(Note note);
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         void EditNote(Note note);
     }
 }

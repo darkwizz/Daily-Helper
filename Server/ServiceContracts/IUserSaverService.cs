@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Entities;
+using Server.Faults;
 
 namespace Server.ServiceContracts
 {
@@ -12,8 +13,10 @@ namespace Server.ServiceContracts
     interface IUserSaverService
     {
         [OperationContract]
-        bool RegisterUser(User user);
+        [FaultContract(typeof(DatabaseConnectionFault))]
+        void RegisterUser(User user);
         [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
         User GetUser(string email, string machineName);
     }
 }

@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Entities;
+using Server.Faults;
 
 namespace Server.DataLayer
 {
@@ -25,6 +27,8 @@ namespace Server.DataLayer
         private static Dictionary<SocialNetworkAccounts, Guid> _accountsIds = null;
         private static Dictionary<Guid, SocialNetworkAccounts> _idsAccounts = null;
 
+        private static bool _areTablesFilled = false;
+
         static MsSqlDAL()
         {
             _database = new DataSet("dbDailyHelper");
@@ -42,6 +46,37 @@ namespace Server.DataLayer
             SqlCommandBuilder _socialNetCommandBuilder = new SqlCommandBuilder(_socialNetAccountsAdapter);
             SqlCommandBuilder _scheduleItemCommandBuilder = new SqlCommandBuilder(_scheduleItemAdapter);
 
+            try
+            {
+                FillTables();
+            }
+            catch (SqlException ex)
+            {                
+                if (!ConnectionFault(ex)) // For debugging
+                {
+                    throw ex;
+                }
+                Console.WriteLine("Connection timeout error. Server is unavailable");
+            }
+        }
+
+        private static bool ConnectionFault(SqlException ex)
+        {
+            for (int i = 0; i < ex.Errors.Count; i++)
+            {
+                if (ex.Errors[i].Number == -2) // if connection timeout error
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void FillTables()
+        {
+            _database.Clear();
+            _database.Tables.Clear();
+
             _userAdapter.Fill(_database, "tbUser");
             _todoAdapter.Fill(_database, "tbTodo");
             _noteAdapter.Fill(_database, "tbNote");
@@ -50,6 +85,8 @@ namespace Server.DataLayer
 
             FillAccountsMappings();
             FillDbRelations();
+
+            _areTablesFilled = true;
         }
 
         private static void FillDbRelations()
@@ -86,64 +123,107 @@ namespace Server.DataLayer
         // add reading of all collections - Notes, TODO items and Social Network Accounts info
         public User GetUser(string email, string machineName)
         {
-            User user = new User();
-            DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Email = '{0}'", email));
-            if (rows == null || rows.Length == 0)
+            try
             {
-                return null;
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                User user = new User();
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Email = '{0}'", email));
+                if (rows == null || rows.Length == 0)
+                {
+                    return null;
+                }
+                Guid id = (Guid)rows[0]["Id"];
+                string password = (string)rows[0]["Pass"];
+
+                user.Id = id;
+                user.Email = email;
+                user.Password = password;
+                user.Notes = GetUserNotes(rows[0]);
+                user.TodoItems = GetUserTodo(rows[0]);
+                user.Accounts = GetAccounts(rows[0]);
+                user.ScheduleItems = GetScheduleItems(rows[0], machineName);
+
+                return user;
             }
-            Guid id = (Guid)rows[0]["Id"];
-            string password = (string)rows[0]["Pass"];
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                    {
+                        ErrorMessage = "Database connection timeout is ended",
+                        FullDescription = ex.Message,
+                        InnerException = ex
+                    });
+            }
+        }
 
-            user.Id = id;
-            user.Email = email;
-            user.Password = password;
-            user.Notes = new Dictionary<Guid, Note>();
-            user.TodoItems = new Dictionary<Guid, TodoItem>();
-            user.Accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
-            user.ScheduleItems = new Dictionary<Guid, OnceRunningScheduleItem>();
-
-            foreach (DataRow row in rows[0].GetChildRows("NoteUser"))
+        private static Dictionary<Guid, Note> GetUserNotes(DataRow row)
+        {
+            Dictionary<Guid, Note> notes = new Dictionary<Guid, Note>();
+            foreach (DataRow child in row.GetChildRows("NoteUser"))
             {
                 Note note = new Note();
-                note.Id = (Guid)row["Id"];
-                note.NoteText = (string)row["NoteText"];
-                user.Notes.Add(note.Id, note);
+                note.Id = (Guid)child["Id"];
+                note.NoteText = (string)child["NoteText"];
+                notes.Add(note.Id, note);
             }
+            return notes;
+        }
 
-            foreach (DataRow row in rows[0].GetChildRows("TodoUser"))
+        private static Dictionary<Guid, TodoItem> GetUserTodo(DataRow row)
+        {
+            Dictionary<Guid, TodoItem> todoItems = new Dictionary<Guid, TodoItem>();
+            foreach (DataRow child in row.GetChildRows("TodoUser"))
             {
                 TodoItem item = new TodoItem();
-                item.Id = (Guid)row["Id"];
-                item.TodoText = (string)row["TodoText"];
-                user.TodoItems.Add(item.Id, item);
+                item.Id = (Guid)child["Id"];
+                item.TodoText = (string)child["TodoText"];
+                todoItems.Add(item.Id, item);
             }
+            return todoItems;
+        }
 
-            foreach (DataRow row in rows[0].GetChildRows("AccountInfoUser"))
+        private static Dictionary<Guid, SocialNetworkAccountInfo> GetAccounts(DataRow row)
+        {
+            Dictionary<Guid, SocialNetworkAccountInfo> accounts = new Dictionary<Guid, SocialNetworkAccountInfo>();
+            foreach (DataRow child in row.GetChildRows("AccountInfoUser"))
             {
                 SocialNetworkAccountInfo info = new SocialNetworkAccountInfo();
-                info.Id = (Guid)row["Id"];
-                info.IsActive = (bool)row["IsActive"];
-                info.Login = (string)row["AccountLogin"];
-                info.Password = (string)row["AccountPass"];
-                info.Account = _idsAccounts[(Guid)row["IdAccount"]];
-                user.Accounts.Add(info.Id, info);
+                info.Id = (Guid)child["Id"];
+                info.IsActive = (bool)child["IsActive"];
+                info.Login = (string)child["AccountLogin"];
+                info.Password = (string)child["AccountPass"];
+                info.Account = _idsAccounts[(Guid)child["IdAccount"]];
+                accounts.Add(info.Id, info);
             }
+            return accounts;
+        }
 
-            foreach (DataRow row in rows[0].GetChildRows("ScheduleItemUser"))
+        private static Dictionary<Guid, OnceRunningScheduleItem> GetScheduleItems(DataRow row, string machineName)
+        {
+            Dictionary<Guid, OnceRunningScheduleItem> scheduleItems = new Dictionary<Guid, OnceRunningScheduleItem>();
+            foreach (DataRow child in row.GetChildRows("ScheduleItemUser"))
             {
-                string scheduleItemMachineName = (string)row["MachineName"];
+                string scheduleItemMachineName = (string)child["MachineName"];
                 if (!machineName.Equals(scheduleItemMachineName))
                 {
                     continue;
                 }
 
                 OnceRunningScheduleItem item;
-                Guid scheduleItemId = (Guid)row["Id"];
-                string executablePath = (string)row["ExecutablePath"];
-                DateTime triggeringTime = (DateTime)row["TriggeringTime"];
-                string message = (string)row["TriggeringMessage"];
-                bool isRegular = (bool)row["IsRegular"];
+                Guid scheduleItemId = (Guid)child["Id"];
+                string executablePath = (string)child["ExecutablePath"];
+                DateTime triggeringTime = (DateTime)child["TriggeringTime"];
+                string message = (string)child["TriggeringMessage"];
+                bool isRegular = (bool)child["IsRegular"];
 
                 if (!isRegular)
                 {
@@ -158,13 +238,12 @@ namespace Server.DataLayer
                 item.TriggeringTime = triggeringTime;
                 item.Message = message;
 
-                user.ScheduleItems.Add(item.Id, item);
+                scheduleItems.Add(item.Id, item);
             }
-
-            return user;
+            return scheduleItems;
         }
 
-        private RegularlyRunningScheduleItem GetRegularlyScheduleItem(Guid id)
+        private static RegularlyRunningScheduleItem GetRegularlyScheduleItem(Guid id)
         {
             RegularlyRunningScheduleItem item = new RegularlyRunningScheduleItem();
             try
@@ -198,6 +277,22 @@ namespace Server.DataLayer
         {
             try
             {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+                DataRow[] existingRows = _database.Tables["tbUser"].Select(string.Format("Email = '{0}'", user.Email));
+                if (existingRows.Length != 0)
+                {
+                    throw new FaultException<DataAlreadyExistsFault>(new DataAlreadyExistsFault()
+                    {
+                        ErrorMessage = "Such user already exists",
+                        FullDescription = "User with email " + user.Email + " has already registered. " +
+                            "Please, choose another email",
+                        InnerException = null
+                    });
+                }
+
                 DataRow row = _database.Tables["tbUser"].NewRow();
                 row["Id"] = user.Id;
                 row["Email"] = user.Email;
@@ -208,100 +303,259 @@ namespace Server.DataLayer
             }
             catch (SqlException ex) // if such email already exists
             {
-                _database.RejectChanges();
-                throw ex;
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
             }
         }
 
 
         public void SaveNote(User user, Note note)
         {
-            DataRow row = _database.Tables["tbNote"].NewRow();
-            row["Id"] = note.Id;
-            row["NoteText"] = note.NoteText;
-            row["IdUser"] = user.Id;
-            _database.Tables["tbNote"].Rows.Add(row);
-            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow row = _database.Tables["tbNote"].NewRow();
+                row["Id"] = note.Id;
+                row["NoteText"] = note.NoteText;
+                row["IdUser"] = user.Id;
+                _database.Tables["tbNote"].Rows.Add(row);
+                _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
         }
 
         public void RemoveNote(Note note)
         {
-            DataRow[] rows = _database.Tables["tbNote"].Select("Id = '" + note.Id + "'");
-            DataRow deletedRow = rows[0];
-            deletedRow.Delete();
-            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow[] rows = _database.Tables["tbNote"].Select("Id = '" + note.Id + "'");
+                DataRow deletedRow = rows[0];
+                deletedRow.Delete();
+                _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
         }
 
         public void UpdateNote(Note note)
         {
-            DataRow[] rows = _database.Tables["tbNote"].Select("Id = '" + note.Id + "'");
-            DataRow editedRow = rows[0];
-            editedRow["NoteText"] = note.NoteText;
-            _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow[] rows = _database.Tables["tbNote"].Select("Id = '" + note.Id + "'");
+                DataRow editedRow = rows[0];
+                editedRow["NoteText"] = note.NoteText;
+                _noteAdapter.Update(_database.Tables["tbNote"]); //_database, "tbNote"
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
         }
+
 
         public void SaveTodoItem(User user, TodoItem item)
         {
-            DataRow row = _database.Tables["tbTodo"].NewRow();
-            row["Id"] = item.Id;
-            row["TodoText"] = item.TodoText;
-            row["IdUser"] = user.Id;
-            _database.Tables["tbTodo"].Rows.Add(row);
-            _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow row = _database.Tables["tbTodo"].NewRow();
+                row["Id"] = item.Id;
+                row["TodoText"] = item.TodoText;
+                row["IdUser"] = user.Id;
+                _database.Tables["tbTodo"].Rows.Add(row);
+                _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
         }
 
         public void RemoveTodoItem(TodoItem item)
         {
-            DataRow[] rows = _database.Tables["tbTodo"].Select("Id = '" + item.Id + "'");
-            DataRow deletedRow = rows[0];
-            deletedRow.Delete();
-            _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
-        }
-
-        public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
-        {
-            DataRow[] rows = _database.Tables["tbAccountInfo"].Select("Id = ", info.Id.ToString());
-            DataRow row = rows.Length == 0 ? _database.Tables["tbAccountInfo"].NewRow() : rows[0];
-
-            row["Id"] = info.Id;
-            row["IdUser"] = user.Id;
-            row["IdAccount"] = _accountsIds[info.Account];
-            row["AccountLogin"] = info.Login;
-            row["AccountPass"] = info.Password;
-            row["IsActive"] = info.IsActive;
-
-            if (rows.Length == 0)
-            {
-                _database.Tables["tbAccountInfo"].Rows.Add(row);
-            }
-
-            _socialNetAccountsAdapter.Update(_database.Tables["tbAccountInfo"]); //_database, "tbAccountInfo"
-        }
-
-        public void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
-        {
-            DataRow row = _database.Tables["tbScheduleItem"].NewRow();
-            row["Id"] = item.Id;
-            Console.WriteLine(item.ExecutablePath);
-            row["ExecutablePath"] = item.ExecutablePath;
-            row["TriggeringTime"] = item.TriggeringTime;
-            row["TriggeringMessage"] = item.Message;
-            row["IdUser"] = user.Id;
-            row["MachineName"] = machineName;
-            row["IsRegular"] = item is RegularlyRunningScheduleItem ? true : false;
-            _database.Tables["tbScheduleItem"].Rows.Add(row);
             try
             {
-                _scheduleItemAdapter.Update(_database.Tables["tbScheduleItem"]);
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow[] rows = _database.Tables["tbTodo"].Select("Id = '" + item.Id + "'");
+                DataRow deletedRow = rows[0];
+                deletedRow.Delete();
+                _todoAdapter.Update(_database.Tables["tbTodo"]); //_database, "tbTodo"
             }
             catch (SqlException ex)
             {
-                Console.WriteLine("Some DB error: " + ex);
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
             }
+        }
 
-            if (item is RegularlyRunningScheduleItem)
+
+        public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
+        {
+            try
             {
-                InsertRegularItem(item as RegularlyRunningScheduleItem);
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow[] rows = _database.Tables["tbAccountInfo"].Select("Id = ", info.Id.ToString());
+                DataRow row = rows.Length == 0 ? _database.Tables["tbAccountInfo"].NewRow() : rows[0];
+
+                row["Id"] = info.Id;
+                row["IdUser"] = user.Id;
+                row["IdAccount"] = _accountsIds[info.Account];
+                row["AccountLogin"] = info.Login;
+                row["AccountPass"] = info.Password;
+                row["IsActive"] = info.IsActive;
+
+                if (rows.Length == 0)
+                {
+                    _database.Tables["tbAccountInfo"].Rows.Add(row);
+                }
+
+                _socialNetAccountsAdapter.Update(_database.Tables["tbAccountInfo"]); //_database, "tbAccountInfo"
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
+        }
+
+
+        public void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
+        {
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow row = _database.Tables["tbScheduleItem"].NewRow();
+                row["Id"] = item.Id;
+                Console.WriteLine(item.ExecutablePath);
+                row["ExecutablePath"] = item.ExecutablePath;
+                row["TriggeringTime"] = item.TriggeringTime;
+                row["TriggeringMessage"] = item.Message;
+                row["IdUser"] = user.Id;
+                row["MachineName"] = machineName;
+                row["IsRegular"] = item is RegularlyRunningScheduleItem ? true : false;
+                _database.Tables["tbScheduleItem"].Rows.Add(row);
+                _scheduleItemAdapter.Update(_database.Tables["tbScheduleItem"]);
+
+                if (item is RegularlyRunningScheduleItem)
+                {
+                    InsertRegularItem(item as RegularlyRunningScheduleItem);
+                }
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
             }
         }
 
@@ -340,14 +594,36 @@ namespace Server.DataLayer
 
         public void RemoveScheduleItem(OnceRunningScheduleItem item)
         {
-            if (item is RegularlyRunningScheduleItem)
+            try
             {
-                DeleteRegularScheduleItem(item as RegularlyRunningScheduleItem);
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                if (item is RegularlyRunningScheduleItem)
+                {
+                    DeleteRegularScheduleItem(item as RegularlyRunningScheduleItem);
+                }
+                DataRow[] rows = _database.Tables["tbScheduleItem"].Select("Id = '" + item.Id + "'");
+                DataRow deletedRow = rows[0];
+                deletedRow.Delete();
+                _scheduleItemAdapter.Update(_database.Tables["tbScheduleItem"]);
             }
-            DataRow[] rows = _database.Tables["tbScheduleItem"].Select("Id = '" + item.Id + "'");
-            DataRow deletedRow = rows[0];
-            deletedRow.Delete();
-            _scheduleItemAdapter.Update(_database.Tables["tbScheduleItem"]);
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // loggingS
+                    throw;
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
         }
 
         private void DeleteRegularScheduleItem(RegularlyRunningScheduleItem item)
