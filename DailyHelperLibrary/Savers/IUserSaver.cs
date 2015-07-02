@@ -9,7 +9,7 @@ namespace DailyHelperLibrary.Savers
 {
     public interface IUserSaver
     {
-        bool RegisterUser(User user);
+        void RegisterUser(User user);
         User GetUser(string email, string machineName);
     }
 }

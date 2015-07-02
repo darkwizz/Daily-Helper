@@ -64,6 +64,8 @@
     <Compile Include="Exceptions\ConnectionFailedException.cs" />
     <Compile Include="Exceptions\MailSenderException.cs" />
     <Compile Include="Exceptions\UnavailableMailRecipientException.cs" />
+    <Compile Include="Faults\DataAlreadyExistsFault.cs" />
+    <Compile Include="Faults\DatabaseConnectionFault.cs" />
     <Compile Include="IDailyHelperUI.cs" />
     <Compile Include="Entities\Note.cs" />
     <Compile Include="IEmailSender.cs" />

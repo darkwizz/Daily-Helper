@@ -8,6 +8,8 @@ using DailyHelperLibrary.Entities;
 using System.Net.Mail;
 using System.ServiceModel;
 using DailyHelperLibrary.Savers;
+using DailyHelperLibrary.Exceptions;
+using DailyHelperLibrary.Faults;
 
 namespace DailyHelperLibrary.Entry
 {
@@ -28,21 +30,59 @@ namespace DailyHelperLibrary.Entry
             string email = e.Email;
             _checkingKey = Guid.NewGuid().ToString();
 
-            // here will be some sending to server to check does this email stil isn't registered in DH system
-
             try
             {
+                // here will be some sending to server to check does this email stil isn't registered in DH system
+                // here will be some Exception catching to check on existing email address
+                // and throw more high-level exception defined in DH library
+                User user = _saverService.GetUser(email, Environment.MachineName);
                 _sender.Send(email, _checkingKey);
                 return new EventResult(true);
             }
-            catch (SmtpException ex)
+            catch (FaultException<DataAlreadyExistsFault> ex)
             {
-                Console.WriteLine("Problems with connection. " + ex.Message);
-                Console.WriteLine("Sending {0} to {1}", _checkingKey, email);
-                return new EventResult(false, "Problems with connection. " + ex.Message);
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
             }
-            // here will be some Exception catching to check on existing email address
-            // and throw more high-level exception defined in DH library
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
+            }
+            catch (CommunicationException ex)
+            {
+                string message = "Connection with server has been failed. " + ex.Message;
+                Console.WriteLine(message); // logging
+                return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
+            }
+            catch (UnavailableMailRecipientException ex)
+            {
+                Exception inner = ex.InnerException;
+                if (inner != null)
+                {
+                    Console.WriteLine(inner.Message); // logging
+                }
+                return new EventResult(false, ex.Message);
+            }
+            catch (MailSenderException ex)
+            {
+                Exception inner = ex.InnerException;
+                if (inner != null)
+                {
+                    Console.WriteLine(inner.Message); // logging
+                }
+                return new EventResult(false, ex.Message);
+            }
         }
 
         public EventResult OnCheckingCodeAccept(AcceptingCheckingKeyEventArgs e)
@@ -57,14 +97,29 @@ namespace DailyHelperLibrary.Entry
             string password = e.Password;
             try
             {
-                bool isSuccessRegistration = _saverService.RegisterUser(new User(email, password));
-                return isSuccessRegistration ? new EventResult(true) : new EventResult(false, "Can't register new user. Please, try later");
+                _saverService.RegisterUser(new User(email, password));
+                return new EventResult(true);
+            }
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
             }
             catch (CommunicationException ex)
             {
                 string message = "Connection with server has been failed. " + ex.Message;
                 Console.WriteLine(message); // logging
                 return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
             }
         }
     }

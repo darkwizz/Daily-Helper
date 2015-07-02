@@ -9,6 +9,8 @@ using System.Net.Mail;
 using System.ServiceModel;
 using DailyHelperLibrary.Savers;
 using DailyHelperLibrary.Scheduler;
+using DailyHelperLibrary.Faults;
+using DailyHelperLibrary.Exceptions;
 
 namespace DailyHelperLibrary.Entry
 {
@@ -39,11 +41,26 @@ namespace DailyHelperLibrary.Entry
                 // I don't know yet is MachineName unique. If it isn't then it'll need to find
                 user = _userSaverService.GetUser(email, Environment.MachineName);
             }
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
+            }
             catch (CommunicationException ex)
             {
                 string message = "Connection with server has been failed. " + ex.Message;
                 Console.WriteLine(message); // logging
                 return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
             }
 
             if (user == null)
@@ -74,6 +91,23 @@ namespace DailyHelperLibrary.Entry
             try
             {
                 user = _userSaverService.GetUser(email, Environment.MachineName);
+                if (user == null)
+                {
+                    // some actions on unexisting user
+                    return new EventResult(false, "Unexisting user");
+                }
+                _sender.Send(email, user.Password);
+                return new EventResult(true);
+            }
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
             }
             catch (CommunicationException ex)
             {
@@ -81,22 +115,28 @@ namespace DailyHelperLibrary.Entry
                 Console.WriteLine(message); // logging
                 return new EventResult(false, message);
             }
-            if (user == null)
+            catch (TimeoutException ex)
             {
-                // some actions on unexisting user
-                return new EventResult(false, "Unexisting user");
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
             }
-            try
+            catch (UnavailableMailRecipientException ex)
             {
-                _sender.Send(email, user.Password);
-                return new EventResult(true);
+                Exception inner = ex.InnerException;
+                if (inner != null)
+                {
+                    Console.WriteLine(inner.Message); // logging
+                }
+                return new EventResult(false, ex.Message);
             }
-            catch (SmtpException ex)
+            catch (MailSenderException ex)
             {
-                string message = "Problems with connection. Can't send email by " + ex.Message;
-                Console.WriteLine(message);
-                return new EventResult(false, message); // when someone wants to test whole system work without net connection,
-                // comment this and move return new EventResult(true); to method end
+                Exception inner = ex.InnerException;
+                if (inner != null)
+                {
+                    Console.WriteLine(inner.Message); // logging
+                }
+                return new EventResult(false, ex.Message);
             }
         }
 

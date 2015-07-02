@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading.Tasks;
 using DailyHelperLibrary.Entities;
+using DailyHelperLibrary.Faults;
 using DailyHelperLibrary.Savers;
 
 namespace DailyHelperLibrary.Scheduler
@@ -21,16 +23,64 @@ namespace DailyHelperLibrary.Scheduler
 
         public EventResult OnOnceRunningSelected(SchedulerModuleEventArgs<OnceRunningScheduleItem> e)
         {
-            _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
-            PlaceOnScheduling(e.User, e.ScheduleItem);
-            return new EventResult(true);
+            try
+            {
+                _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
+                PlaceOnScheduling(e.User, e.ScheduleItem);
+                return new EventResult(true);
+            }
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
+            }
+            catch (CommunicationException ex)
+            {
+                string message = "Connection with server has been failed. " + ex.Message;
+                Console.WriteLine(message); // logging
+                return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
+            }
         }
 
         public EventResult OnRegularlyRunningSelected(SchedulerModuleEventArgs<RegularlyRunningScheduleItem> e)
         {
-            _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
-            PlaceOnScheduling(e.User, e.ScheduleItem);
-            return new EventResult(true);
+            try
+            {
+                _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
+                PlaceOnScheduling(e.User, e.ScheduleItem);
+                return new EventResult(true);
+            }
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
+            }
+            catch (CommunicationException ex)
+            {
+                string message = "Connection with server has been failed. " + ex.Message;
+                Console.WriteLine(message); // logging
+                return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
+            }
         }
 
         private void PlaceOnScheduling(User user, OnceRunningScheduleItem item)
@@ -47,18 +97,42 @@ namespace DailyHelperLibrary.Scheduler
         /// <returns>true <code>EventResult</code>, if already added task is removed</returns>
         public EventResult OnDeletedScheduleItem(SchedulerModuleEventArgs<OnceRunningScheduleItem> e)
         {
-            OnceRunningScheduleItem item = e.ScheduleItem;
-            User user = e.User;
-
-            bool success = _scheduler.RemoveFromScheduling(item);
-            if (!success)
+            try
             {
-                return new EventResult(false, "No such task on scheduling. Please, place it on scheduler");
-            }
+                OnceRunningScheduleItem item = e.ScheduleItem;
+                User user = e.User;
 
-            _saver.DeleteScheduleItem(item);
-            user.ScheduleItems.Remove(item.Id);
-            return new EventResult(true);
+                bool success = _scheduler.RemoveFromScheduling(item);
+                if (!success)
+                {
+                    return new EventResult(false, "No such task on scheduling. Please, place it on scheduler");
+                }
+
+                _saver.DeleteScheduleItem(item);
+                user.ScheduleItems.Remove(item.Id);
+                return new EventResult(true);
+            }
+            catch (FaultException<DatabaseConnectionFault> ex)
+            {
+                Console.WriteLine(ex.Detail.FullDescription); // logging
+                return new EventResult(false, ex.Detail.ErrorMessage);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Unknown server error: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
+            }
+            catch (CommunicationException ex)
+            {
+                string message = "Connection with server has been failed. " + ex.Message;
+                Console.WriteLine(message); // logging
+                return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
+            }
         }
     }
 }

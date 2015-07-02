@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Server.Faults
 {
-    [DataContract(Namespace = "/Server")]
+    [DataContract(Namespace = "Server/")]
     class DatabaseConnectionFault
     {
         [DataMember]

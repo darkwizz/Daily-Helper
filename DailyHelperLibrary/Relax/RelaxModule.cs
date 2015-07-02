@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.ServiceModel;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,9 +22,28 @@ namespace DailyHelperLibrary.Relax
             {
                 return new EventResult(false, "Song already is played");
             }
-            Stream musicStream = _musicGetter.GetMusicStream();
-            _musicPlayer.Play(musicStream);
-            return new EventResult(true);
+            try
+            {
+                Stream musicStream = _musicGetter.GetMusicStream();
+                _musicPlayer.Play(musicStream);
+                return new EventResult(true);
+            }
+            catch (FaultException ex)
+            {
+                Console.WriteLine("Some fault on server: " + ex.Message); // logging
+                return new EventResult(false, ex.Message);
+            }
+            catch (CommunicationException ex)
+            {
+                string message = "Connection with server has been failed. " + ex.Message;
+                Console.WriteLine(message); // logging
+                return new EventResult(false, message);
+            }
+            catch (TimeoutException ex)
+            {
+                Console.WriteLine(ex.Message); // logging
+                return new EventResult(false, "Can't connect to server. Connection timeout is over");
+            }
         }
 
         public EventResult OnNextChosen()

@@ -106,16 +106,10 @@ namespace Server
 
         void IScheduleItemSaverService.SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
         {
-            try
-            {
-                Console.WriteLine("Save new schedule item...");
-                Console.WriteLine("Path: {0}\nTime: {1}\nMessage: {2}\nMachine name: {3}\n", item.ExecutablePath, item.TriggeringTime, item.Message, machineName);
-                _dataLayer.SaveScheduleItem(user, item, machineName);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Outer exception\n" + ex.Message);
-            }
+            Console.WriteLine("Save new schedule item...");
+            // logging
+            // Console.WriteLine("Path: {0}\nTime: {1}\nMessage: {2}\nMachine name: {3}\n", item.ExecutablePath, item.TriggeringTime, item.Message, machineName);
+            _dataLayer.SaveScheduleItem(user, item, machineName);
         }
 
         void IScheduleItemSaverService.DeleteScheduleItem(OnceRunningScheduleItem item)

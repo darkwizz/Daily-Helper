@@ -15,9 +15,9 @@ namespace DailyHelperLibrary.Proxies
     {
         private UserSaverProxy _proxy = new UserSaverProxy();
 
-        public bool RegisterUser(User user)
+        public void RegisterUser(User user)
         {
-            return _proxy.RegisterUser(user);
+            _proxy.RegisterUser(user);
         }
 
         public User GetUser(string email, string machineName)
@@ -36,9 +36,9 @@ namespace DailyHelperLibrary.Proxies
                 base("SaveUserEndpoint")
             { }
 
-            public bool RegisterUser(User user)
+            public void RegisterUser(User user)
             {
-                return Channel.RegisterUser(user.ServiceUser);
+                Channel.RegisterUser(user.ServiceUser);
             }
 
             public User GetUser(string email, string machineName)

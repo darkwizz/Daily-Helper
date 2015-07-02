@@ -80,7 +80,7 @@ namespace DailyHelperLibrary.Scheduler
             Task task = _taskService.GetTask(item.Id.ToString());
             if (task == null)
             {
-                Console.WriteLine("No such task"); // log
+                Console.WriteLine("No such task"); // logging
                 return false;
             }
             _taskService.RootFolder.DeleteTask(item.Id.ToString());
