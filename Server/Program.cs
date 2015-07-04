@@ -80,7 +80,8 @@ namespace Server
         private static void TestUserLoading()
         {
             IDAL dal = new MsSqlDAL();
-            User user = dal.GetUser("fake@mail.com", Environment.MachineName);
+            User user = dal.GetUser("fake@mail.com");
+            user.Notes = dal.GetNotes(user);
             string output = string.Format("User {0} - {1}", user.Email, user.Password);
             Console.WriteLine(output);
             foreach (Note note in user.Notes.Values)
@@ -92,7 +93,8 @@ namespace Server
         private static void TestDataUpdatingDeleting()
         {
             IDAL dal = new MsSqlDAL();
-            User user = dal.GetUser("fake@mail.com", Environment.MachineName);
+            User user = dal.GetUser("fake@mail.com");
+            user.Notes = dal.GetNotes(user);
             Note removedNote = user.Notes.Values.ToArray()[0];
             dal.RemoveNote(removedNote);
             user.Notes.Remove(removedNote.Id);

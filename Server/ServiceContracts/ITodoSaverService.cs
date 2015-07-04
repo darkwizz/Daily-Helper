@@ -18,5 +18,8 @@ namespace Server.ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DatabaseConnectionFault))]
         void RemoveTodoItem(TodoItem item);
+        [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
+        Dictionary<Guid, TodoItem> GetTodoItems(User user);
     }
 }

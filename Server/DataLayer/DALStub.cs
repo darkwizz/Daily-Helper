@@ -7,7 +7,8 @@ using Server.Entities;
 
 namespace Server.DataLayer
 {
-    class DALStub: IDAL
+    // Now it isn't needed
+    class DALStub//: IDAL
     {
         public User GetUser(string email, string machineName)
         {

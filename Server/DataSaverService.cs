@@ -31,41 +31,15 @@ namespace Server
             _sounds.AddRange(Directory.GetFiles("../../Relax Sounds"));
         }
 
-        //private DataSaverService(IDAL dataLayer)
-        //{
-        //    _dataLayer = dataLayer;
-        //}
-
-        //private DataSaverService()
-        //{ }
-
-        //public static DataSaverService GetSaverService()
-        //{
-        //    if (_saverService == null)
-        //    {
-        //        _saverService = new DataSaverService(null);
-        //    }
-        //    return _saverService;
-        //}
-
-        //public static DataSaverService GetSaverService(IDAL dataLayer)
-        //{
-        //    if (_saverService == null)
-        //    {
-        //        _saverService = new DataSaverService(dataLayer);
-        //    }
-        //    return _saverService;
-        //}
-
         void IUserSaverService.RegisterUser(User user)
         {
             Console.WriteLine("Register new user - {0}", user.Email);
             _dataLayer.SaveUser(user);
         }
 
-        User IUserSaverService.GetUser(string email, string machineName)
+        User IUserSaverService.GetUser(string email)
         {
-            User user = _dataLayer.GetUser(email, machineName);
+            User user = _dataLayer.GetUser(email);
             return user;
         }
 
@@ -87,6 +61,12 @@ namespace Server
             _dataLayer.UpdateNote(note);
         }
 
+        Dictionary<Guid, Note> INoteSaverService.GetNotes(User user)
+        {
+            Console.WriteLine("Loading user {0} notes...", user.Email);
+            return _dataLayer.GetNotes(user);
+        }
+
         void ITodoSaverService.SaveTodoItem(User user, TodoItem item)
         {
             Console.WriteLine("Save new TODO item...");
@@ -99,9 +79,21 @@ namespace Server
             _dataLayer.RemoveTodoItem(item);
         }
 
+        Dictionary<Guid, TodoItem> ITodoSaverService.GetTodoItems(User user)
+        {
+            Console.WriteLine("Loading user {0} todo items...", user.Email); // logging
+            return _dataLayer.GetTodoItems(user);
+        }
+
         void ISocialNetworkAccountInfoSaverService.UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
         {
             Console.WriteLine("Updating user account info...");
+        }
+
+        Dictionary<Guid, SocialNetworkAccountInfo> ISocialNetworkAccountInfoSaverService.GetAccounts(User user)
+        {
+            Console.WriteLine("Loading user {0} accoutns...", user.Email);
+            return _dataLayer.GetAccounts(user);
         }
 
         void IScheduleItemSaverService.SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
@@ -116,6 +108,12 @@ namespace Server
         {
             Console.WriteLine("Delete existing schedule item...");
             _dataLayer.RemoveScheduleItem(item);
+        }
+
+        Dictionary<Guid, OnceRunningScheduleItem> IScheduleItemSaverService.GetScheduleItems(User user, string machineName)
+        {
+            Console.WriteLine("Loading schedule items of user {0} on machine {1}...", user.Email, machineName);
+            return _dataLayer.GetScheduleItems(user, machineName);
         }
 
         Stream IMusicStreamGetterService.GetMusicStream()

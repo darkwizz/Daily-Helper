@@ -18,5 +18,8 @@ namespace Server.ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DatabaseConnectionFault))]
         void DeleteScheduleItem(OnceRunningScheduleItem item);
+        [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
+        Dictionary<Guid, OnceRunningScheduleItem> GetScheduleItems(User user, string machineName);
     }
 }

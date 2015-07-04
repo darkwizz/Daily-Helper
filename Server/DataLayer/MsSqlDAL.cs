@@ -13,6 +13,7 @@ namespace Server.DataLayer
 {
     class MsSqlDAL: IDAL
     {
+        #region FIELDS
         private static string _connectionString = @"Data Source=ARTUR-PC\SQLSERVER; Database=dbDailyHelper; " +
                                                     @"Integrated Security=SSPI"; // SSPI <=> true
         private static SqlConnection _connection = null;
@@ -28,6 +29,7 @@ namespace Server.DataLayer
         private static Dictionary<Guid, SocialNetworkAccounts> _idsAccounts = null;
 
         private static bool _areTablesFilled = false;
+        #endregion
 
         static MsSqlDAL()
         {
@@ -119,9 +121,8 @@ namespace Server.DataLayer
             }
         }
 
-        // TODO
-        // add reading of all collections - Notes, TODO items and Social Network Accounts info
-        public User GetUser(string email, string machineName)
+        #region USER
+        public User GetUser(string email)
         {
             try
             {
@@ -142,10 +143,12 @@ namespace Server.DataLayer
                 user.Id = id;
                 user.Email = email;
                 user.Password = password;
-                user.Notes = GetUserNotes(rows[0]);
-                user.TodoItems = GetUserTodo(rows[0]);
-                user.Accounts = GetAccounts(rows[0]);
-                user.ScheduleItems = GetScheduleItems(rows[0], machineName);
+                // Here all dictionaries will be null to make prevent reading unnecessary fields;
+                // when they will be needed, the Client call appropriate method explicitly
+                user.Notes = new Dictionary<Guid,Note>();
+                user.TodoItems = new Dictionary<Guid,TodoItem>();
+                user.Accounts = new Dictionary<Guid,SocialNetworkAccountInfo>();
+                user.ScheduleItems = new Dictionary<Guid,OnceRunningScheduleItem>();
 
                 return user;
             }
@@ -165,6 +168,57 @@ namespace Server.DataLayer
             }
         }
 
+        /// <summary>
+        /// Save new user into database. If such user already exists, then throw new <code>SqlException</code>
+        /// </summary>
+        /// <param name="user">User to save in DB</param>
+        public void SaveUser(User user)
+        {
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+                DataRow[] existingRows = _database.Tables["tbUser"].Select(string.Format("Email = '{0}'", user.Email));
+                if (existingRows.Length != 0)
+                {
+                    throw new FaultException<DataAlreadyExistsFault>(new DataAlreadyExistsFault()
+                    {
+                        ErrorMessage = "Such user already exists",
+                        FullDescription = "User with email " + user.Email + " has already registered. " +
+                            "Please, choose another email",
+                        InnerException = null
+                    });
+                }
+
+                DataRow row = _database.Tables["tbUser"].NewRow();
+                row["Id"] = user.Id;
+                row["Email"] = user.Email;
+                row["Pass"] = user.Password;
+                _database.Tables["tbUser"].Rows.Add(row);
+                _userAdapter.Update(_database.Tables["tbUser"]); //_database, "tbUser"
+                //_database.AcceptChanges();
+            }
+            catch (SqlException ex) // if such email already exists
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
+        }
+        #endregion
+
+        #region READ_DICTIONARIES
+        // Read all needed dictionaries
         private static Dictionary<Guid, Note> GetUserNotes(DataRow row)
         {
             Dictionary<Guid, Note> notes = new Dictionary<Guid, Note>();
@@ -268,56 +322,9 @@ namespace Server.DataLayer
             }
             return item;
         }
+        #endregion
 
-        /// <summary>
-        /// Save new user into database. If such user already exists, then throw new <code>SqlException</code>
-        /// </summary>
-        /// <param name="user">User to save in DB</param>
-        public void SaveUser(User user)
-        {
-            try
-            {
-                if (!_areTablesFilled)
-                {
-                    FillTables();
-                }
-                DataRow[] existingRows = _database.Tables["tbUser"].Select(string.Format("Email = '{0}'", user.Email));
-                if (existingRows.Length != 0)
-                {
-                    throw new FaultException<DataAlreadyExistsFault>(new DataAlreadyExistsFault()
-                    {
-                        ErrorMessage = "Such user already exists",
-                        FullDescription = "User with email " + user.Email + " has already registered. " +
-                            "Please, choose another email",
-                        InnerException = null
-                    });
-                }
-
-                DataRow row = _database.Tables["tbUser"].NewRow();
-                row["Id"] = user.Id;
-                row["Email"] = user.Email;
-                row["Pass"] = user.Password;
-                _database.Tables["tbUser"].Rows.Add(row);
-                _userAdapter.Update(_database.Tables["tbUser"]); //_database, "tbUser"
-                //_database.AcceptChanges();
-            }
-            catch (SqlException ex) // if such email already exists
-            {
-                if (!ConnectionFault(ex))
-                {
-                    Console.WriteLine(ex.Message); // logging
-                    throw; // <=> throw ex
-                }
-                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
-                {
-                    ErrorMessage = "Database connection timeout is ended",
-                    FullDescription = ex.Message,
-                    InnerException = ex
-                });
-            }
-        }
-
-
+        #region NOTES
         public void SaveNote(User user, Note note)
         {
             try
@@ -410,7 +417,40 @@ namespace Server.DataLayer
             }
         }
 
+        public Dictionary<Guid, Note> GetNotes(User user)
+        {
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
 
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                if (rows == null || rows.Length == 0)
+                {
+                    return null;
+                }
+                return GetUserNotes(rows[0]);
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
+        }
+        #endregion
+
+        #region TODO
         public void SaveTodoItem(User user, TodoItem item)
         {
             try
@@ -473,7 +513,40 @@ namespace Server.DataLayer
             }
         }
 
+        public Dictionary<Guid, TodoItem> GetTodoItems(User user)
+        {
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
 
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                if (rows == null || rows.Length == 0)
+                {
+                    return null;
+                }
+                return GetUserTodo(rows[0]);
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
+        }
+        #endregion
+
+        #region SOCIAL_NETWORKS
         public void SaveAccountInfo(User user, SocialNetworkAccountInfo info)
         {
             try
@@ -516,7 +589,40 @@ namespace Server.DataLayer
             }
         }
 
+        public Dictionary<Guid, SocialNetworkAccountInfo> GetAccounts(User user)
+        {
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
 
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                if (rows == null || rows.Length == 0)
+                {
+                    return null;
+                }
+                return GetAccounts(rows[0]);
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
+        }
+        #endregion
+
+        #region SCHEDULER
         public void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName)
         {
             try
@@ -645,5 +751,38 @@ namespace Server.DataLayer
                 }
             }
         }
+
+        public Dictionary<Guid, OnceRunningScheduleItem> GetScheduleItems(User user, string machineName)
+        {
+            try
+            {
+                if (!_areTablesFilled)
+                {
+                    FillTables();
+                }
+
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                if (rows == null || rows.Length == 0)
+                {
+                    return null;
+                }
+                return GetScheduleItems(rows[0], machineName);
+            }
+            catch (SqlException ex)
+            {
+                if (!ConnectionFault(ex))
+                {
+                    Console.WriteLine(ex.Message); // logging
+                    throw; // <=> throw ex
+                }
+                throw new FaultException<DatabaseConnectionFault>(new DatabaseConnectionFault()
+                {
+                    ErrorMessage = "Database connection timeout is ended",
+                    FullDescription = ex.Message,
+                    InnerException = ex
+                });
+            }
+        }
+        #endregion
     }
 }

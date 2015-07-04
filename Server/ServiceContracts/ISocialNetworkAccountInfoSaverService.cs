@@ -15,5 +15,8 @@ namespace Server.ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DatabaseConnectionFault))]
         void UpdateAccountInfo(User user, SocialNetworkAccountInfo info);
+        [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
+        Dictionary<Guid, SocialNetworkAccountInfo> GetAccounts(User user);
     }
 }

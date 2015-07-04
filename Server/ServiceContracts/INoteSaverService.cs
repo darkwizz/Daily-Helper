@@ -21,5 +21,8 @@ namespace Server.ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DatabaseConnectionFault))]
         void EditNote(Note note);
+        [OperationContract]
+        [FaultContract(typeof(DatabaseConnectionFault))]
+        Dictionary<Guid, Note> GetNotes(User user);
     }
 }

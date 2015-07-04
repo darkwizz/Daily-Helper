@@ -17,6 +17,6 @@ namespace Server.ServiceContracts
         void RegisterUser(User user);
         [OperationContract]
         [FaultContract(typeof(DatabaseConnectionFault))]
-        User GetUser(string email, string machineName);
+        User GetUser(string email);
     }
 }
