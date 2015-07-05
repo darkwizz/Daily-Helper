@@ -14,6 +14,6 @@ namespace DailyHelperLibrary.ServiceContracts
         [OperationContract]
         void RegisterUser(ServiceUser user);
         [OperationContract]
-        ServiceUser GetUser(string email, string machineName);
+        ServiceUser GetUser(string email);
     }
 }

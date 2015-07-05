@@ -24,6 +24,11 @@ namespace DailyHelperLibrary.Proxies
             _proxy.RemoveTodoItem(item);
         }
 
+        public Dictionary<Guid, TodoItem> GetTodoItems(User user)
+        {
+            return _proxy.GetTodoItems(user);
+        }
+
         public void Dispose()
         {
             _proxy.Close();
@@ -39,9 +44,15 @@ namespace DailyHelperLibrary.Proxies
             {
                 Channel.SaveTodoItem(user.ServiceUser, item.ServiceTodoItem);
             }
+
             public void RemoveTodoItem(TodoItem item)
             {
                 Channel.RemoveTodoItem(item.ServiceTodoItem);
+            }
+
+            public Dictionary<Guid, TodoItem> GetTodoItems(User user)
+            {
+                return Channel.GetTodoItems(user.ServiceUser).ToDictionary(x => x.Key, x => x.Value.TodoItem);
             }
 
             new public void Close()

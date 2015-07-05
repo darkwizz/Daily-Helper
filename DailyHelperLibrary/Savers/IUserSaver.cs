@@ -10,6 +10,6 @@ namespace DailyHelperLibrary.Savers
     public interface IUserSaver
     {
         void RegisterUser(User user);
-        User GetUser(string email, string machineName);
+        User GetUser(string email);
     }
 }

@@ -15,5 +15,7 @@ namespace DailyHelperLibrary.ServiceContracts
         void SaveScheduleItem(ServiceUser user, ServiceOnceRunningScheduleItem item, string machineName);
         [OperationContract]
         void DeleteScheduleItem(ServiceOnceRunningScheduleItem item);
+        [OperationContract]
+        Dictionary<Guid, ServiceOnceRunningScheduleItem> GetScheduleItems(ServiceUser user, string machineName);
     }
 }

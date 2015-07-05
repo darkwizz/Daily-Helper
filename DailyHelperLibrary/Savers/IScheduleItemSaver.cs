@@ -11,5 +11,6 @@ namespace DailyHelperLibrary.Savers
     {
         void SaveScheduleItem(User user, OnceRunningScheduleItem item, string machineName);
         void DeleteScheduleItem(OnceRunningScheduleItem item);
+        Dictionary<Guid, OnceRunningScheduleItem> GetScheduleItems(User user, string machineName);
     }
 }

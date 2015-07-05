@@ -17,7 +17,7 @@ namespace DailyHelperLibrary.Entities
         public Guid Id { get; private set; }
         public string Login { get; internal set; }
         public string Password { get; internal set; }
-        public SocialNetworkAccounts Account { get; private set; }
+        public SocialNetworkAccounts AccountKind { get; private set; }
         public bool IsActive { get; set; }
 
         public SocialNetworkAccountInfo(string login, string password, SocialNetworkAccounts account)
@@ -25,7 +25,7 @@ namespace DailyHelperLibrary.Entities
             Id = Guid.NewGuid();
             Login = login;
             Password = password;
-            Account = account;
+            AccountKind = account;
             IsActive = false;
 
             if (_serviceAccounts == null)
@@ -50,10 +50,10 @@ namespace DailyHelperLibrary.Entities
             Login = info.Login;
             Password = info.Password;
             IsActive = info.IsActive;
-            Account = _accounts[info.ServiceAccount];
+            AccountKind = _accounts[info.ServiceAccountKind];
         }
 
-        internal ServiceSocialNetworkAccountInfo ServiceAccountInfo
+        internal ServiceSocialNetworkAccountInfo ServiceAccount
         {
             get
             {
@@ -62,7 +62,7 @@ namespace DailyHelperLibrary.Entities
                     Login = Login,
                     Password = Password,
                     IsActive = IsActive,
-                    ServiceAccount = _serviceAccounts[Account],
+                    ServiceAccountKind = _serviceAccounts[AccountKind],
                     Id = Id
                 };
                 return info;

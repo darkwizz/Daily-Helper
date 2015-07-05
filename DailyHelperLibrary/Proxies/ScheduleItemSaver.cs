@@ -25,6 +25,11 @@ namespace DailyHelperLibrary.Proxies
             _proxy.DeleteScheduleItem(item);
         }
 
+        public Dictionary<Guid, OnceRunningScheduleItem> GetScheduleItems(User user, string machineName)
+        {
+            return _proxy.GetScheduleItems(user, machineName);
+        }
+
 
         class ScheduleItemSaverProxy : ClientBase<IScheduleItemSaverService>
         {
@@ -40,6 +45,11 @@ namespace DailyHelperLibrary.Proxies
             public void DeleteScheduleItem(OnceRunningScheduleItem item)
             {
                 Channel.DeleteScheduleItem(item.ServiceScheduleItem);
+            }
+
+            public Dictionary<Guid, OnceRunningScheduleItem> GetScheduleItems(User user, string machineName)
+            {
+                return Channel.GetScheduleItems(user.ServiceUser, machineName).ToDictionary(x => x.Key, x => x.Value.ScheduleItem);
             }
         }
 

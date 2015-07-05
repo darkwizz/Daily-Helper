@@ -20,9 +20,9 @@ namespace DailyHelperLibrary.Proxies
             _proxy.RegisterUser(user);
         }
 
-        public User GetUser(string email, string machineName)
+        public User GetUser(string email)
         {
-            return _proxy.GetUser(email, machineName);
+            return _proxy.GetUser(email);
         }
 
         public void Dispose()
@@ -41,9 +41,9 @@ namespace DailyHelperLibrary.Proxies
                 Channel.RegisterUser(user.ServiceUser);
             }
 
-            public User GetUser(string email, string machineName)
+            public User GetUser(string email)
             {
-                ServiceUser user = Channel.GetUser(email, machineName);
+                ServiceUser user = Channel.GetUser(email);
                 if (user == null)
                 {
                     return null;

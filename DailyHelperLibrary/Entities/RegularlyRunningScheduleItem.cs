@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DailyHelperLibrary.Scheduler;
+using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.Entities
 {
@@ -28,17 +29,17 @@ namespace DailyHelperLibrary.Entities
             RunningDays = new bool[DAYS_COUNT]; // all items has default false value
         }
 
-        internal RegularlyRunningScheduleItem(InnerRegularlyRunningScheduleItem item) :
+        internal RegularlyRunningScheduleItem(ServiceRegularlyRunningScheduleItem item) :
             base(item)
         {
             RunningDays = item.RunningDays;
         }
 
-        internal override InnerOnceRunningScheduleItem InnerScheduleItem
+        internal override ServiceOnceRunningScheduleItem ServiceScheduleItem
         {
             get
             {
-                InnerRegularlyRunningScheduleItem item = new InnerRegularlyRunningScheduleItem
+                ServiceRegularlyRunningScheduleItem item = new ServiceRegularlyRunningScheduleItem
                 {
                     Id = Id,
                     TriggeringTime = TriggeringTime,

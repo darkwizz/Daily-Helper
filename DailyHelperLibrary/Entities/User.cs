@@ -73,7 +73,13 @@ namespace DailyHelperLibrary.Entities
             Id = user.Id;
             Email = user.Email;
             Password = user.Password;
+
             ScheduleItems = new Dictionary<Guid, OnceRunningScheduleItem>();
+            foreach (var item in user.ScheduleItems.Values)
+            {
+                OnceRunningScheduleItem newItem = item.ScheduleItem;
+                ScheduleItems.Add(item.Id, newItem);
+            }
 
             Notes = new Dictionary<Guid, Note>();
             foreach (var note in user.Notes.Values)
@@ -92,8 +98,8 @@ namespace DailyHelperLibrary.Entities
             _accounts = new Dictionary<SocialNetworkAccounts, SocialNetworkAccountInfo>();
             foreach (var account in user.Accounts.Values)
             {
-                SocialNetworkAccountInfo info = account.AccountInfo;
-                _accounts.Add(info.Account, info);
+                SocialNetworkAccountInfo info = account.Account;
+                _accounts.Add(info.AccountKind, info);
             }
         }
 
@@ -122,13 +128,21 @@ namespace DailyHelperLibrary.Entities
                     new Dictionary<ServiceSocialNetworkAccounts, ServiceSocialNetworkAccountInfo>();
                 foreach (var info in _accounts.Values)
                 {
-                    ServiceSocialNetworkAccountInfo serviceInfo = info.ServiceAccountInfo;
-                    serviceAccountsInfo.Add(serviceInfo.ServiceAccount, serviceInfo);
+                    ServiceSocialNetworkAccountInfo serviceInfo = info.ServiceAccount;
+                    serviceAccountsInfo.Add(serviceInfo.ServiceAccountKind, serviceInfo);
+                }
+                Dictionary<Guid, ServiceOnceRunningScheduleItem> scheduleItems =
+                    new Dictionary<Guid, ServiceOnceRunningScheduleItem>();
+                foreach (var item in ScheduleItems.Values)
+                {
+                    ServiceOnceRunningScheduleItem serviceItem = item.ServiceScheduleItem;
+                    scheduleItems.Add(item.Id, serviceItem);
                 }
 
                 user.Notes = serviceNotes;
                 user.TodoItems = serviceTodoItems;
                 user.Accounts = serviceAccountsInfo;
+                user.ScheduleItems = scheduleItems;
                 return user;
             }
         }

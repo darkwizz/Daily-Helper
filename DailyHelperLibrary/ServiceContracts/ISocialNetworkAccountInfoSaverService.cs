@@ -13,5 +13,7 @@ namespace DailyHelperLibrary.ServiceContracts
     {
         [OperationContract]
         void UpdateAccountInfo(ServiceUser user, ServiceSocialNetworkAccountInfo info);
+        [OperationContract]
+        Dictionary<Guid, ServiceSocialNetworkAccountInfo> GetAccounts(ServiceUser user);
     }
 }

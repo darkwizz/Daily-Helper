@@ -255,7 +255,7 @@ namespace Server.DataLayer
                 info.IsActive = (bool)child["IsActive"];
                 info.Login = (string)child["AccountLogin"];
                 info.Password = (string)child["AccountPass"];
-                info.Account = _idsAccounts[(Guid)child["IdAccount"]];
+                info.AccountKind = _idsAccounts[(Guid)child["IdAccount"]];
                 accounts.Add(info.Id, info);
             }
             return accounts;
@@ -426,7 +426,7 @@ namespace Server.DataLayer
                     FillTables();
                 }
 
-                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = '{0}'", user.Id));
                 if (rows == null || rows.Length == 0)
                 {
                     return null;
@@ -521,8 +521,7 @@ namespace Server.DataLayer
                 {
                     FillTables();
                 }
-
-                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = '{0}'", user.Id));
                 if (rows == null || rows.Length == 0)
                 {
                     return null;
@@ -561,7 +560,7 @@ namespace Server.DataLayer
 
                 row["Id"] = info.Id;
                 row["IdUser"] = user.Id;
-                row["IdAccount"] = _accountsIds[info.Account];
+                row["IdAccount"] = _accountsIds[info.AccountKind];
                 row["AccountLogin"] = info.Login;
                 row["AccountPass"] = info.Password;
                 row["IsActive"] = info.IsActive;
@@ -598,7 +597,7 @@ namespace Server.DataLayer
                     FillTables();
                 }
 
-                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = '{0}'", user.Id));
                 if (rows == null || rows.Length == 0)
                 {
                     return null;
@@ -761,12 +760,14 @@ namespace Server.DataLayer
                     FillTables();
                 }
 
-                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = {0}", user.Id));
+                DataRow[] rows = _database.Tables["tbUser"].Select(string.Format("Id = '{0}'", user.Id));
                 if (rows == null || rows.Length == 0)
                 {
                     return null;
                 }
-                return GetScheduleItems(rows[0], machineName);
+                Dictionary<Guid, OnceRunningScheduleItem> items = GetScheduleItems(rows[0], machineName);
+                Console.WriteLine("Schedule items have been read...");
+                return items;
             }
             catch (SqlException ex)
             {

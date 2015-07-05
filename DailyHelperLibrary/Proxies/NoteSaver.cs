@@ -29,6 +29,11 @@ namespace DailyHelperLibrary.Proxies
             _proxy.RemoveNote(note);
         }
 
+        public Dictionary<Guid, Note> GetNotes(User user)
+        {
+            return _proxy.GetNotes(user);
+        }
+
         public void Dispose()
         {
             _proxy.Close();
@@ -54,6 +59,11 @@ namespace DailyHelperLibrary.Proxies
             public void RemoveNote(Note note)
             {
                 Channel.RemoveNote(note.ServiceNote);
+            }
+
+            public Dictionary<Guid, Note> GetNotes(User user)
+            {
+                return Channel.GetNotes(user.ServiceUser).ToDictionary(x => x.Key, x => x.Value.Note);
             }
 
             new public void Close()

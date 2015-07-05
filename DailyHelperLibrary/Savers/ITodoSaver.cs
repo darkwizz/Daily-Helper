@@ -11,5 +11,6 @@ namespace DailyHelperLibrary.Savers
     {
         void SaveTodoItem(User user, TodoItem item);
         void RemoveTodoItem(TodoItem item);
+        Dictionary<Guid, TodoItem> GetTodoItems(User user);
     }
 }

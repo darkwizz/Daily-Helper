@@ -35,7 +35,7 @@ namespace DailyHelperLibrary.Entry
                 // here will be some sending to server to check does this email stil isn't registered in DH system
                 // here will be some Exception catching to check on existing email address
                 // and throw more high-level exception defined in DH library
-                User user = _saverService.GetUser(email, Environment.MachineName);
+                User user = _saverService.GetUser(email);
                 _sender.Send(email, _checkingKey);
                 return new EventResult(true);
             }

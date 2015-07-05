@@ -27,18 +27,19 @@ namespace DailyHelperConsoleModule
             // if server doesn't run when proxies are created, then program won't throw en exception;
             // and when Close() is called then no exceptions
 
+            SocialNetworkAccountInfoSaver accountProxy = new SocialNetworkAccountInfoSaver();
             NoteSaver noteProxy = new NoteSaver();
-            NotesModule notesModule = new NotesModule(noteProxy);
-
+            TodoSaver todoProxy = new TodoSaver();
             UserSaver userProxy = new UserSaver();
             IScheduler scheduler = new WindowsScheduler();
             ScheduleItemSaver scheduleProxy = new ScheduleItemSaver();
             RegistrationModule regModule = new RegistrationModule(userProxy);
-            AuthorisationModule authModule = new AuthorisationModule(userProxy, scheduleProxy, scheduler);
+            AuthorisationModule authModule = new AuthorisationModule(userProxy, scheduleProxy, scheduler, noteProxy, todoProxy, accountProxy);
 
             SchedulerModule schedulerModule = new SchedulerModule(scheduler, scheduleProxy);
 
-            TodoSaver todoProxy = new TodoSaver();
+            NotesModule notesModule = new NotesModule(noteProxy);
+
             TodoModule todoModule = new TodoModule(todoProxy);
 
             TimerModule timerModule = new TimerModule();

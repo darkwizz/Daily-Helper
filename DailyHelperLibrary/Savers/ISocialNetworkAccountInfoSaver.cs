@@ -10,5 +10,6 @@ namespace DailyHelperLibrary.Savers
     public interface ISocialNetworkAccountInfoSaver
     {
         void UpdateAccountInfo(User user, SocialNetworkAccountInfo info);
+        Dictionary<Guid, SocialNetworkAccountInfo> GetAccounts(User user);
     }
 }

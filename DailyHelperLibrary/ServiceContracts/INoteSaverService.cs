@@ -17,5 +17,7 @@ namespace DailyHelperLibrary.ServiceContracts
         void RemoveNote(ServiceNote note);
         [OperationContract]
         void EditNote(ServiceNote note);
+        [OperationContract]
+        Dictionary<Guid, ServiceNote> GetNotes(ServiceUser user);
     }
 }

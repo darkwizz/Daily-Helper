@@ -25,7 +25,7 @@ namespace DailyHelperLibrary.Scheduler
         {
             try
             {
-                _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
+                _saver.SaveScheduleItem(e.User, e.ScheduleItem, OnceRunningScheduleItem.GetMachineId);
                 PlaceOnScheduling(e.User, e.ScheduleItem);
                 return new EventResult(true);
             }
@@ -56,7 +56,7 @@ namespace DailyHelperLibrary.Scheduler
         {
             try
             {
-                _saver.SaveScheduleItem(e.User, e.ScheduleItem, Environment.MachineName);
+                _saver.SaveScheduleItem(e.User, e.ScheduleItem, OnceRunningScheduleItem.GetMachineId);
                 PlaceOnScheduling(e.User, e.ScheduleItem);
                 return new EventResult(true);
             }

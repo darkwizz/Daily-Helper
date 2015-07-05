@@ -19,6 +19,11 @@ namespace DailyHelperLibrary.Proxies
             _proxy.UpdateAccountInfo(user, info);
         }
 
+        public Dictionary<Guid, SocialNetworkAccountInfo> GetAccounts(User user)
+        {
+            return _proxy.GetAccounts(user);
+        }
+
         public void Dispose()
         {
             _proxy.Close();
@@ -32,7 +37,12 @@ namespace DailyHelperLibrary.Proxies
 
             public void UpdateAccountInfo(User user, SocialNetworkAccountInfo info)
             {
-                Channel.UpdateAccountInfo(user.ServiceUser, info.ServiceAccountInfo);
+                Channel.UpdateAccountInfo(user.ServiceUser, info.ServiceAccount);
+            }
+
+            public Dictionary<Guid, SocialNetworkAccountInfo> GetAccounts(User user)
+            {
+                return Channel.GetAccounts(user.ServiceUser).ToDictionary(x => x.Key, x => x.Value.Account);
             }
 
             new public void Close()

@@ -12,5 +12,6 @@ namespace DailyHelperLibrary.Savers
         void SaveNote(User user, Note note);
         void RemoveNote(Note note);
         void EditNote(Note note);
+        Dictionary<Guid, Note> GetNotes(User user);
     }
 }

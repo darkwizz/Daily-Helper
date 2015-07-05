@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Threading.Tasks;
 using DailyHelperLibrary.Scheduler;
+using DailyHelperLibrary.ServiceEntities;
 
 namespace DailyHelperLibrary.Entities
 {
@@ -26,7 +28,7 @@ namespace DailyHelperLibrary.Entities
             Id = Guid.NewGuid();
         }
 
-        internal OnceRunningScheduleItem(InnerOnceRunningScheduleItem item)
+        internal OnceRunningScheduleItem(ServiceOnceRunningScheduleItem item)
         {
             Id = item.Id;
             TriggeringTime = item.TriggeringTime;
@@ -34,11 +36,11 @@ namespace DailyHelperLibrary.Entities
             Message = item.Message;
         }
 
-        internal virtual InnerOnceRunningScheduleItem InnerScheduleItem
+        internal virtual ServiceOnceRunningScheduleItem ServiceScheduleItem
         {
             get
             {
-                InnerOnceRunningScheduleItem item = new InnerOnceRunningScheduleItem
+                ServiceOnceRunningScheduleItem item = new ServiceOnceRunningScheduleItem
                 {
                     Id = Id,
                     TriggeringTime = TriggeringTime,
@@ -46,6 +48,28 @@ namespace DailyHelperLibrary.Entities
                     Message = Message
                 };
                 return item;
+            }
+        }
+
+        public static string GetMachineId
+        {
+            get
+            {
+                ManagementObjectSearcher searcher = new ManagementObjectSearcher
+                        ("Select MACAddress, PNPDeviceID FROM Win32_NetworkAdapter WHERE MACAddress IS NOT NULL");
+                ManagementObjectCollection mObject = searcher.Get();
+
+                string id = "";
+                foreach (ManagementObject obj in mObject)
+                {
+                    object pnp = obj["PNPDeviceID"];
+                    id = obj["MACAddress"].ToString();
+                    if (pnp != null && pnp.ToString().Contains("PCI\\"))
+                    {
+                        break;
+                    }
+                }
+                return id;
             }
         }
     }

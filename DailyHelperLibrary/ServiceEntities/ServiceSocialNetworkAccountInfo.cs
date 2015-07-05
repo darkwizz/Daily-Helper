@@ -8,7 +8,7 @@ using DailyHelperLibrary.Entities;
 
 namespace DailyHelperLibrary.ServiceEntities
 {
-    [DataContract(Name = "SocialNetworkAccountInfo", Namespace = "Server/")]
+    [DataContract(Name = "SocialNetworkAccounts", Namespace = "Server/")]
     enum ServiceSocialNetworkAccounts
     {
         [EnumMember]
@@ -19,7 +19,7 @@ namespace DailyHelperLibrary.ServiceEntities
         Facebook
     }
 
-    [DataContract(Namespace = "Server/")]
+    [DataContract(Name = "SocialNetworkAccountInfo", Namespace = "Server/")]
     class ServiceSocialNetworkAccountInfo
     {
         [DataMember]
@@ -28,12 +28,12 @@ namespace DailyHelperLibrary.ServiceEntities
         public string Login { get; set; }
         [DataMember]
         public string Password { get; set; }
-        [DataMember]
-        public ServiceSocialNetworkAccounts ServiceAccount { get; set; }
+        [DataMember(Name = "AccountKind")]
+        public ServiceSocialNetworkAccounts ServiceAccountKind { get; set; }
         [DataMember]
         public bool IsActive { get; set; }
 
-        internal SocialNetworkAccountInfo AccountInfo
+        internal SocialNetworkAccountInfo Account
         {
             get
             {

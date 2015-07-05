@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Server.DataLayer;
 using Server.Entities;
+using Server.ServiceContracts;
 
 namespace Server
 {
@@ -16,6 +17,7 @@ namespace Server
             //TestDataLayer();
             //TestDataUpdatingDeleting();
             //TestUserLoading();
+            //Console.ReadKey();
 
             //Console.WriteLine(typeof(IDataSaverService).FullName);
             //DataSaverService saverService = DataSaverService.GetSaverService(new DALStub());
@@ -80,13 +82,16 @@ namespace Server
         private static void TestUserLoading()
         {
             IDAL dal = new MsSqlDAL();
-            User user = dal.GetUser("fake@mail.com");
-            user.Notes = dal.GetNotes(user);
+            DataSaverService saver = new DataSaverService();
+            IUserSaverService userSaver = saver;
+            IScheduleItemSaverService scheduleSaver = saver;
+            User user = userSaver.GetUser("fake@mail.com");
+            user.ScheduleItems = scheduleSaver.GetScheduleItems(user, "azaza");
             string output = string.Format("User {0} - {1}", user.Email, user.Password);
             Console.WriteLine(output);
-            foreach (Note note in user.Notes.Values)
+            foreach (OnceRunningScheduleItem item in user.ScheduleItems.Values)
             {
-                Console.WriteLine(note.NoteText);
+                Console.WriteLine(item.ExecutablePath);
             }
         }
 
