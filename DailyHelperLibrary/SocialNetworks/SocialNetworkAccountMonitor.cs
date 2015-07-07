@@ -12,15 +12,15 @@ namespace DailyHelperLibrary.SocialNetworks
     /// </summary>
     abstract class SocialNetworkAccountMonitor
     {
-        public string Login { get; private set; }
-        public string Password { get; private set; }
-        public Action<string> NotificationHandler { get; set; }
+        protected string _email;
+        protected string _password { get; private set; }
+        protected Action<string> _notificationHandler { get; set; }
 
-        public SocialNetworkAccountMonitor(string login, string password, Action<string> notificationHandler)
+        public SocialNetworkAccountMonitor(string email, string password, Action<string> notificationHandler)
         {
-            Login = login;
-            Password = password;
-            NotificationHandler = notificationHandler;
+            _email = email;
+            _password = password;
+            _notificationHandler = notificationHandler;
         }
 
         public abstract void StartMonitoring();

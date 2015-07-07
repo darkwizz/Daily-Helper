@@ -21,9 +21,11 @@ namespace DailyHelperLibrary.SocialNetworks
         {
             User user = e.User;
             SocialNetworkAccountInfo info = e.AccountInfo;
-            SocialNetworkAccountMonitor monitor = new SocialNetworkAccountMonitorStub();
-            _proxy.UpdateAccountInfo(user, info);
+            SocialNetworkAccountMonitor monitor = AccountMonitorFactory.GetMonitor(SocialNetworkAccounts.Default,
+                e.NoitificationHandler, info.Login, info.Password);
             monitor.StartMonitoring();
+            info.IsActive = true;
+            _proxy.UpdateAccountInfo(user, info);
             return new EventResult(true);
         }
 
@@ -31,9 +33,11 @@ namespace DailyHelperLibrary.SocialNetworks
         {
             User user = e.User;
             SocialNetworkAccountInfo info = e.AccountInfo;
-            SocialNetworkAccountMonitor monitor = new SocialNetworkAccountMonitorStub();
-            _proxy.UpdateAccountInfo(user, info);
+            SocialNetworkAccountMonitor monitor = AccountMonitorFactory.GetMonitor(SocialNetworkAccounts.Default,
+                e.NoitificationHandler, info.Login, info.Password);
             monitor.StopMonitoring();
+            info.IsActive = false;
+            _proxy.UpdateAccountInfo(user, info);
             return new EventResult(true);
         }
     }

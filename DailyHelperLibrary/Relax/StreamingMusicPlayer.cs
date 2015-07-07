@@ -159,9 +159,7 @@ namespace DailyHelperLibrary.Relax
                         //Debug.WriteLine(String.Format("Decompressed a frame {0}", decompressed));
                         _bufferedWaveProvider.AddSamples(_buffer, 0, decompressed);
                     }
-
                 } while (_playbackState != StreamingPlaybackState.Stopped);
-                _manualEvent.Set();
                 // Console.WriteLine("AddSamples(stream) frees...");
                 //Debug.WriteLine("Exiting");
                 // was doing this in a finally block, but for some reason
@@ -183,6 +181,7 @@ namespace DailyHelperLibrary.Relax
             }
             finally
             {
+                _manualEvent.Set();
                 if (decompressor != null)
                 {
                     decompressor.Dispose();
