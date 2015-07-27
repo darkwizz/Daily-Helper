@@ -8,22 +8,31 @@ namespace DailyHelperLibrary.SocialNetworks
 {
     class SocialNetworkAccountMonitorStub: SocialNetworkAccountMonitor
     {
-        public SocialNetworkAccountMonitorStub(): base("StubLogin", "StubPassword", StubHandler)
+        public SocialNetworkAccountMonitorStub(): base("StubLogin", "StubPassword")
         { }
 
-        private static void StubHandler(string temp)
+        public override bool Authorize()
         {
-            Console.WriteLine("New notification: " + temp);
+            Console.WriteLine("Log in account...");
+            return false;
         }
 
-        public override void StartMonitoring()
+        public override string GetServerResponse()
         {
-            Console.WriteLine("Start monitoring of default stub account...");
+            Console.WriteLine("Returning of server response...");
+            return "";
         }
 
-        public override void StopMonitoring()
+        public override bool HasNewUnreadMessages(string response)
         {
-            Console.WriteLine("Stop monitoring of default stub account...");
+            Console.WriteLine("Checking on unread messages...");
+            return false;
+        }
+
+        public override List<string> GetUnreadMessagesAuthors(string response)
+        {
+            Console.WriteLine("Returning messages authors...");
+            return new List<string>(0);
         }
     }
 }

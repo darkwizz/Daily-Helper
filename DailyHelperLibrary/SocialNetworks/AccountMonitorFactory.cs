@@ -10,12 +10,12 @@ namespace DailyHelperLibrary.SocialNetworks
     static class AccountMonitorFactory
     {
         public static SocialNetworkAccountMonitor GetMonitor(SocialNetworkAccounts accountKind, 
-            Action<string> notificationHandler, string login, string password)
+            string login, string password)
         {
             switch (accountKind)
             {
                 case SocialNetworkAccounts.VK:
-                    return new VkAccountMonitor();
+                    return new VkAccountMonitor(login, password);
                 default:
                     return new SocialNetworkAccountMonitorStub();
             }
